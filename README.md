@@ -1,3 +1,30 @@
-[# ohtani-complete-database
-大谷翔平の成績をリアルタイムで可視化
-](https://accounts.google.com/v3/signin/identifier?app_domain=https%3A%2F%2Fgithub.com&client_id=1078992815106-brpsupgvhheqg35tupphbh0qk9c32nq8.apps.googleusercontent.com&code_challenge=hQkNu-1knWhO51Nr-6cnyKxri_X6cIHI-9dNnuoUdMQ&code_challenge_method=S256&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAO0-bP3N4XS59C4G9D1EtvjRq47H9CePMHlBDtSgDCAcsTZQbC85MplAvaQhDKS5b-a5WjZeBpsei5if71afe2WAfaMpFZQ457HBZLV0aB8ENb7paUTOPB-LpT3pMk2CZi0EAWG4qSYC988LzlbsYxtlFF9ESdiQvQUzHSd-uJvOkOWS3ZqkHydxLPpFlSzN_GqYz7zZxzhIk8WPcbDO_8tBqz-TkyWqsJAGzKQq00RpgKE-kYSBno47F83ZHvtAuBtOK-14YVpIAJPc2M5gA6fVdoEhBaeYO0w6lv0OL6meVyeSYwaWCiDk25f-IId7gJKzZ5X01LStGtEv0W_oSDYx7lZxBTnPMfakdnMTmroqMvAieQ9vAVTm-WSws9ZatzeIPFCn1umhnDh6-CZc6r5pmb1sNTrtybqxhwU0MC-e2z1bvekVdEWvbIVs11xXsXwLd5v7DeUyABF1C4xu0K4QSq39A%26flowName%3DGeneralOAuthFlow%26as%3DS-167352977%253A1771155578540340%26client_id%3D1078992815106-brpsupgvhheqg35tupphbh0qk9c32nq8.apps.googleusercontent.com%26requestPath%3D%252Fsignin%252Foauth%252Fconsent%23&dsh=S-167352977%3A1771155578540340&flowName=GeneralOAuthFlow&nonce=9bc4861551d4272113fbb7d7d1eb386b&o2v=2&opparams=%253F&prompt=select_account&redirect_uri=https%3A%2F%2Fgithub.com%2Fsessions%2Fsocial%2Fgoogle%2Fcallback&response_type=code&scope=openid%20email%20profile&service=lso&state=59523e126ed5e7067a74b758941c3470)
+# ohtani-complete-database
+
+大谷翔平の成績をリアルタイムで可視化するWebアプリ
+
+## 機能
+
+- **ダッシュボード** — 最新シーズンの打撃・投球成績カード + グラフ
+- **通算成績** — NPB・MLB全シーズンの打撃・投球テーブル
+- **ニュース** — MLB.comからの最新記事まとめ
+
+## 技術スタック
+
+- Next.js 16 / TypeScript / Tailwind CSS
+- MLB Stats API（公開API、キー不要）
+- Recharts（グラフ）
+
+## ローカル開発
+
+```bash
+cd app
+npm install
+npm run dev
+# → http://localhost:3000
+```
+
+## デプロイ
+
+Vercelで自動デプロイ。`vercel.json` 設定済み。
+
+[![Deploy with Vercel](https://vercel.com/button/)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAlumNET-dshigami%2Fohtani-complete-database)
