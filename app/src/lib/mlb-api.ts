@@ -3,27 +3,46 @@ import type { BattingStats, PitchingStats, PlayerInfo, SeasonStats } from "./typ
 const MLB_API_BASE = "https://statsapi.mlb.com/api/v1";
 const OHTANI_PLAYER_ID = 660271;
 
-export async function getPlayerInfo(): Promise<PlayerInfo> {
-  const res = await fetch(
-    `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}?hydrate=currentTeam`,
-    { next: { revalidate: 3600 } }
-  );
-  const data = await res.json();
-  const person = data.people[0];
+const DEFAULT_PLAYER: PlayerInfo = {
+  id: OHTANI_PLAYER_ID,
+  fullName: "Shohei Ohtani",
+  currentTeam: "Los Angeles Dodgers",
+  position: "Designated Hitter",
+  batSide: "Left",
+  throwSide: "Right",
+  height: "6' 4\"",
+  weight: 210,
+  birthDate: "1994-07-05",
+  birthCountry: "Japan",
+  number: "17",
+};
 
-  return {
-    id: person.id,
-    fullName: person.fullName,
-    currentTeam: person.currentTeam?.name ?? "N/A",
-    position: person.primaryPosition?.name ?? "N/A",
-    batSide: person.batSide?.description ?? "N/A",
-    throwSide: person.pitchHand?.description ?? "N/A",
-    height: person.height ?? "N/A",
-    weight: person.weight ?? 0,
-    birthDate: person.birthDate ?? "N/A",
-    birthCountry: person.birthCountry ?? "N/A",
-    number: person.primaryNumber ?? "N/A",
-  };
+export async function getPlayerInfo(): Promise<PlayerInfo> {
+  try {
+    const res = await fetch(
+      `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}?hydrate=currentTeam`,
+      { next: { revalidate: 3600 } }
+    );
+    if (!res.ok) return DEFAULT_PLAYER;
+    const data = await res.json();
+    const person = data.people[0];
+
+    return {
+      id: person.id,
+      fullName: person.fullName,
+      currentTeam: person.currentTeam?.name ?? "N/A",
+      position: person.primaryPosition?.name ?? "N/A",
+      batSide: person.batSide?.description ?? "N/A",
+      throwSide: person.pitchHand?.description ?? "N/A",
+      height: person.height ?? "N/A",
+      weight: person.weight ?? 0,
+      birthDate: person.birthDate ?? "N/A",
+      birthCountry: person.birthCountry ?? "N/A",
+      number: person.primaryNumber ?? "N/A",
+    };
+  } catch {
+    return DEFAULT_PLAYER;
+  }
 }
 
 function parseBattingStats(
@@ -94,56 +113,62 @@ interface StatsGroup {
 }
 
 export async function getYearByYearStats(): Promise<SeasonStats[]> {
-  const [battingRes, pitchingRes] = await Promise.all([
-    fetch(
-      `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=yearByYear&group=hitting`,
-      { next: { revalidate: 600 } }
-    ),
-    fetch(
-      `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=yearByYear&group=pitching`,
-      { next: { revalidate: 600 } }
-    ),
-  ]);
+  try {
+    const [battingRes, pitchingRes] = await Promise.all([
+      fetch(
+        `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=yearByYear&group=hitting`,
+        { next: { revalidate: 600 } }
+      ),
+      fetch(
+        `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=yearByYear&group=pitching`,
+        { next: { revalidate: 600 } }
+      ),
+    ]);
 
-  const battingData = await battingRes.json();
-  const pitchingData = await pitchingRes.json();
+    if (!battingRes.ok && !pitchingRes.ok) return [];
 
-  const battingByYear = new Map<string, BattingStats>();
-  const pitchingByYear = new Map<string, PitchingStats>();
+    const battingData = battingRes.ok ? await battingRes.json() : { stats: [] };
+    const pitchingData = pitchingRes.ok ? await pitchingRes.json() : { stats: [] };
 
-  const battingGroup: StatsGroup | undefined = battingData.stats?.[0];
-  if (battingGroup?.splits) {
-    for (const split of battingGroup.splits) {
-      const season = split.season;
-      const team = split.team?.name ?? "N/A";
-      const league = split.league?.name ?? "N/A";
-      battingByYear.set(season, parseBattingStats(split.stat, season, team, league));
+    const battingByYear = new Map<string, BattingStats>();
+    const pitchingByYear = new Map<string, PitchingStats>();
+
+    const battingGroup: StatsGroup | undefined = battingData.stats?.[0];
+    if (battingGroup?.splits) {
+      for (const split of battingGroup.splits) {
+        const season = split.season;
+        const team = split.team?.name ?? "N/A";
+        const league = split.league?.name ?? "N/A";
+        battingByYear.set(season, parseBattingStats(split.stat, season, team, league));
+      }
     }
-  }
 
-  const pitchingGroup: StatsGroup | undefined = pitchingData.stats?.[0];
-  if (pitchingGroup?.splits) {
-    for (const split of pitchingGroup.splits) {
-      const season = split.season;
-      const team = split.team?.name ?? "N/A";
-      const league = split.league?.name ?? "N/A";
-      pitchingByYear.set(season, parsePitchingStats(split.stat, season, team, league));
+    const pitchingGroup: StatsGroup | undefined = pitchingData.stats?.[0];
+    if (pitchingGroup?.splits) {
+      for (const split of pitchingGroup.splits) {
+        const season = split.season;
+        const team = split.team?.name ?? "N/A";
+        const league = split.league?.name ?? "N/A";
+        pitchingByYear.set(season, parsePitchingStats(split.stat, season, team, league));
+      }
     }
+
+    const allSeasons = new Set([...battingByYear.keys(), ...pitchingByYear.keys()]);
+    const results: SeasonStats[] = [];
+
+    for (const season of allSeasons) {
+      results.push({
+        season,
+        batting: battingByYear.get(season) ?? null,
+        pitching: pitchingByYear.get(season) ?? null,
+      });
+    }
+
+    results.sort((a, b) => a.season.localeCompare(b.season));
+    return results;
+  } catch {
+    return [];
   }
-
-  const allSeasons = new Set([...battingByYear.keys(), ...pitchingByYear.keys()]);
-  const results: SeasonStats[] = [];
-
-  for (const season of allSeasons) {
-    results.push({
-      season,
-      batting: battingByYear.get(season) ?? null,
-      pitching: pitchingByYear.get(season) ?? null,
-    });
-  }
-
-  results.sort((a, b) => a.season.localeCompare(b.season));
-  return results;
 }
 
 export async function getCurrentSeasonStats(): Promise<SeasonStats | null> {

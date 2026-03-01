@@ -76,11 +76,25 @@ export default async function DashboardPage() {
         </section>
       )}
 
+      {/* No data message */}
+      {!current && allStats.length === 0 && (
+        <section className="rounded-xl border border-dodger-blue/15 bg-white p-12 text-center dark:border-dodger-blue/25 dark:bg-gray-900">
+          <p className="text-lg text-gray-500 dark:text-gray-400">
+            MLB APIからデータを取得できませんでした
+          </p>
+          <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">
+            インターネット接続を確認してページをリロードしてください
+          </p>
+        </section>
+      )}
+
       {/* Charts */}
-      <section className="grid gap-6 lg:grid-cols-2">
-        <HrChart data={allStats} />
-        <PitchingChart data={allStats} />
-      </section>
+      {allStats.length > 0 && (
+        <section className="grid gap-6 lg:grid-cols-2">
+          <HrChart data={allStats} />
+          <PitchingChart data={allStats} />
+        </section>
+      )}
     </div>
   );
 }
