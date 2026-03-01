@@ -15,16 +15,16 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Player Profile */}
-      <section className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+      <section className="rounded-xl border border-dodger-blue/15 bg-white p-6 dark:border-dodger-blue/25 dark:bg-gray-900">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-3xl dark:bg-blue-900/30">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-dodger-blue text-3xl text-white">
             ⚾
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {player.fullName}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-dodger-blue font-medium dark:text-dodger-blue">
               #{player.number} | {player.currentTeam} | {player.position}
             </p>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">

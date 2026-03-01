@@ -28,7 +28,7 @@ export default function PitchingChart({ data }: PitchingChartProps) {
   if (chartData.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+    <div className="rounded-xl border border-dodger-blue/15 bg-white p-6 dark:border-dodger-blue/25 dark:bg-gray-900">
       <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
         シーズン別投球成績
       </h3>
@@ -42,7 +42,7 @@ export default function PitchingChart({ data }: PitchingChartProps) {
             <Tooltip
               contentStyle={{
                 backgroundColor: "#fff",
-                border: "1px solid #e5e7eb",
+                border: "1px solid #005A9C",
                 borderRadius: "8px",
               }}
             />
@@ -51,7 +51,7 @@ export default function PitchingChart({ data }: PitchingChartProps) {
               yAxisId="era"
               type="monotone"
               dataKey="防御率"
-              stroke="#ef4444"
+              stroke="#EF3E42"
               strokeWidth={2}
               dot={{ r: 4 }}
             />
@@ -59,7 +59,7 @@ export default function PitchingChart({ data }: PitchingChartProps) {
               yAxisId="so"
               type="monotone"
               dataKey="奪三振"
-              stroke="#10b981"
+              stroke="#005A9C"
               strokeWidth={2}
               dot={{ r: 4 }}
             />

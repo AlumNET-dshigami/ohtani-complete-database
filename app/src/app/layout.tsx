@@ -17,7 +17,7 @@ export default function RootLayout({
       <body className="antialiased bg-gray-50 dark:bg-gray-950">
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-        <footer className="border-t border-gray-200 dark:border-gray-800">
+        <footer className="border-t border-dodger-blue/15 dark:border-dodger-blue/25">
           <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
             データ提供: MLB Stats API | 大谷翔平 データベース
           </div>

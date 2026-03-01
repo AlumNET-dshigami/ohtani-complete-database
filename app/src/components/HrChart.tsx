@@ -28,7 +28,7 @@ export default function HrChart({ data }: HrChartProps) {
   if (chartData.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
+    <div className="rounded-xl border border-dodger-blue/15 bg-white p-6 dark:border-dodger-blue/25 dark:bg-gray-900">
       <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
         シーズン別ホームラン数
       </h3>
@@ -41,12 +41,12 @@ export default function HrChart({ data }: HrChartProps) {
             <Tooltip
               contentStyle={{
                 backgroundColor: "#fff",
-                border: "1px solid #e5e7eb",
+                border: "1px solid #005A9C",
                 borderRadius: "8px",
               }}
             />
             <Legend />
-            <Bar dataKey="HR" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="HR" fill="#005A9C" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
