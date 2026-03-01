@@ -59,6 +59,36 @@ export interface PlayerInfo {
   number: string;
 }
 
+export interface GameLogBatting {
+  date: string;
+  opponent: string;
+  atBats: number;
+  runs: number;
+  hits: number;
+  doubles: number;
+  triples: number;
+  homeRuns: number;
+  rbi: number;
+  baseOnBalls: number;
+  strikeOuts: number;
+  stolenBases: number;
+  avg: string;
+}
+
+export interface GameLogPitching {
+  date: string;
+  opponent: string;
+  result: string;
+  inningsPitched: string;
+  hits: number;
+  runs: number;
+  earnedRuns: number;
+  baseOnBalls: number;
+  strikeOuts: number;
+  homeRuns: number;
+  era: string;
+}
+
 export interface NewsArticle {
   title: string;
   description: string;

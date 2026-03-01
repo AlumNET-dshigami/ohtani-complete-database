@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
   { href: "/", label: "ダッシュボード" },
+  { href: "/gamelog", label: "試合結果" },
   { href: "/stats", label: "通算成績" },
   { href: "/news", label: "ニュース" },
 ];
