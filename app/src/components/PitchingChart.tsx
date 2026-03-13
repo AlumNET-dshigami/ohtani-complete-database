@@ -28,7 +28,7 @@ export default function PitchingChart({ data }: PitchingChartProps) {
   if (chartData.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-dodger-blue/15 bg-white p-6 dark:border-dodger-blue/25 dark:bg-gray-900">
+    <div className="rounded-xl border border-border bg-surface p-6">
       <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
         シーズン別投球成績
       </h3>
@@ -41,7 +41,7 @@ export default function PitchingChart({ data }: PitchingChartProps) {
             <YAxis yAxisId="so" orientation="right" tick={{ fontSize: 12 }} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#fff",
+                backgroundColor: "var(--surface)",
                 border: "1px solid #005A9C",
                 borderRadius: "8px",
               }}
@@ -52,16 +52,18 @@ export default function PitchingChart({ data }: PitchingChartProps) {
               type="monotone"
               dataKey="防御率"
               stroke="#EF3E42"
-              strokeWidth={2}
-              dot={{ r: 4 }}
+              strokeWidth={2.5}
+              dot={{ r: 5, fill: "#EF3E42", strokeWidth: 2, stroke: "#fff" }}
+              activeDot={{ r: 7 }}
             />
             <Line
               yAxisId="so"
               type="monotone"
               dataKey="奪三振"
               stroke="#005A9C"
-              strokeWidth={2}
-              dot={{ r: 4 }}
+              strokeWidth={2.5}
+              dot={{ r: 5, fill: "#005A9C", strokeWidth: 2, stroke: "#fff" }}
+              activeDot={{ r: 7 }}
             />
           </LineChart>
         </ResponsiveContainer>

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getGameLogBatting, getGameLogPitching } from "@/lib/mlb-api";
 import StatsTable from "@/components/StatsTable";
 import GameLogFilter from "@/components/GameLogFilter";
+import AutoRefresh from "@/components/AutoRefresh";
 import type { GameLogBatting, GameLogPitching } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -56,20 +57,50 @@ export default async function GameLogPage({ searchParams }: PageProps) {
         ? "WBC"
         : "レギュラーシーズン";
 
+  const totalHr = batting.reduce((sum, g) => sum + g.homeRuns, 0);
+  const totalHits = batting.reduce((sum, g) => sum + g.hits, 0);
+  const totalRbi = batting.reduce((sum, g) => sum + g.rbi, 0);
+  const totalSb = batting.reduce((sum, g) => sum + g.stolenBases, 0);
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          試合結果
-        </h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
-          各試合の打撃・投球成績
-        </p>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            試合結果
+          </h1>
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
+            各試合の打撃・投球成績
+          </p>
+        </div>
+        <AutoRefresh intervalMs={300000} />
       </div>
 
       <Suspense fallback={<div className="h-10" />}>
         <GameLogFilter />
       </Suspense>
+
+      {/* Quick summary */}
+      {batting.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl border border-border bg-surface p-3 text-center">
+            <p className="text-xs font-medium text-dodger-blue">試合数</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{batting.length}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-3 text-center">
+            <p className="text-xs font-medium text-dodger-blue">本塁打</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{totalHr}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-3 text-center">
+            <p className="text-xs font-medium text-dodger-blue">安打</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{totalHits}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-3 text-center">
+            <p className="text-xs font-medium text-dodger-blue">打点 / 盗塁</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{totalRbi} / {totalSb}</p>
+          </div>
+        </div>
+      )}
 
       <StatsTable
         title={`打撃成績 — ${season}年 ${typeLabel}`}

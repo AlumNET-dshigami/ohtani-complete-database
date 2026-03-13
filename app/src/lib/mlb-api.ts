@@ -10,6 +10,8 @@ import type {
 const MLB_API_BASE = "https://statsapi.mlb.com/api/v1";
 const OHTANI_PLAYER_ID = 660271;
 
+export const OHTANI_HEADSHOT_URL = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${OHTANI_PLAYER_ID}/headshot/67/current`;
+
 const DEFAULT_PLAYER: PlayerInfo = {
   id: OHTANI_PLAYER_ID,
   fullName: "Shohei Ohtani",
@@ -28,7 +30,7 @@ export async function getPlayerInfo(): Promise<PlayerInfo> {
   try {
     const res = await fetch(
       `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}?hydrate=currentTeam`,
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: 1800 } }
     );
     if (!res.ok) return DEFAULT_PLAYER;
     const data = await res.json();
@@ -124,11 +126,11 @@ export async function getYearByYearStats(): Promise<SeasonStats[]> {
     const [battingRes, pitchingRes] = await Promise.all([
       fetch(
         `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=yearByYear&group=hitting`,
-        { next: { revalidate: 600 } }
+        { next: { revalidate: 300 } }
       ),
       fetch(
         `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=yearByYear&group=pitching`,
-        { next: { revalidate: 600 } }
+        { next: { revalidate: 300 } }
       ),
     ]);
 
@@ -224,7 +226,7 @@ export async function getGameLogBatting(
 ): Promise<GameLogBatting[]> {
   try {
     const url = buildGameLogUrl("hitting", season, gameType);
-    const res = await fetch(url, { next: { revalidate: 600 } });
+    const res = await fetch(url, { next: { revalidate: 300 } });
     if (!res.ok) return [];
     const data = await res.json();
 
@@ -255,7 +257,7 @@ export async function getGameLogPitching(
 ): Promise<GameLogPitching[]> {
   try {
     const url = buildGameLogUrl("pitching", season, gameType);
-    const res = await fetch(url, { next: { revalidate: 600 } });
+    const res = await fetch(url, { next: { revalidate: 300 } });
     if (!res.ok) return [];
     const data = await res.json();
 

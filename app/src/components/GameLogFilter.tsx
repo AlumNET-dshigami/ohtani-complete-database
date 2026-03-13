@@ -22,11 +22,11 @@ export default function GameLogFilter() {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-wrap items-center gap-3">
       <select
         value={currentSeason}
         onChange={(e) => updateParams(e.target.value, currentType)}
-        className="rounded-lg border border-dodger-blue/20 bg-white px-3 py-2 text-sm font-medium text-gray-900 dark:border-dodger-blue/30 dark:bg-gray-800 dark:text-white"
+        className="rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-gray-900 shadow-sm focus:border-dodger-blue focus:outline-none focus:ring-2 focus:ring-dodger-blue/20 dark:text-white"
       >
         {seasons.map((year) => (
           <option key={year} value={year}>
@@ -34,15 +34,15 @@ export default function GameLogFilter() {
           </option>
         ))}
       </select>
-      <div className="flex gap-1">
+      <div className="flex gap-1 rounded-lg border border-border bg-surface-alt p-1 shadow-sm">
         {GAME_TYPES.map((type) => (
           <button
             key={type.value}
             onClick={() => updateParams(currentSeason, type.value)}
-            className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-md px-3 py-2 text-sm font-medium transition-all ${
               currentType === type.value
-                ? "bg-dodger-blue text-white"
-                : "border border-dodger-blue/20 text-gray-700 hover:bg-dodger-blue-light dark:border-dodger-blue/30 dark:text-gray-300 dark:hover:bg-dodger-blue/10"
+                ? "bg-dodger-blue text-white shadow-sm"
+                : "text-gray-600 hover:bg-surface hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             }`}
           >
             {type.label}

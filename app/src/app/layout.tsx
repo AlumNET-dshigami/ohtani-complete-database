@@ -13,13 +13,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
-      <body className="antialiased bg-gray-50 dark:bg-gray-950">
+    <html lang="ja" suppressHydrationWarning>
+      <body className="antialiased bg-background text-foreground">
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-        <footer className="border-t border-dodger-blue/15 dark:border-dodger-blue/25">
+        <footer className="border-t border-border">
           <div className="mx-auto max-w-6xl px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            データ提供: MLB Stats API | 大谷翔平 データベース
+            <span className="font-medium text-dodger-blue">MLB Stats API</span>
+            {" "}からリアルタイムでデータを取得 | 5分ごとに自動更新
           </div>
         </footer>
       </body>
