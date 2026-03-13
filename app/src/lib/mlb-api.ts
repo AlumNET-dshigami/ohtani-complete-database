@@ -5,6 +5,8 @@ import type {
   PitchingStats,
   PlayerInfo,
   SeasonStats,
+  VideoHighlight,
+  PeriodStats,
 } from "./types";
 
 const MLB_API_BASE = "https://statsapi.mlb.com/api/v1";
@@ -186,10 +188,13 @@ export async function getCurrentSeasonStats(): Promise<SeasonStats | null> {
   return allStats.find((s) => s.season === String(currentYear)) ?? allStats[allStats.length - 1] ?? null;
 }
 
+// ---- Game Log ----
+
 interface GameLogSplitEntry {
   date: string;
   isHome: boolean;
   opponent?: { name?: string };
+  game?: { gamePk?: number };
   stat: Record<string, unknown>;
 }
 
@@ -204,6 +209,7 @@ function buildGameLogUrl(
   if (gameType === "POST") {
     return `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&gameType=F&gameType=D&gameType=L&gameType=W`;
   }
+  // S = Spring Training, E = Exhibition, A = All-Star, R = Regular Season
   return `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&gameType=${gameType}`;
 }
 
@@ -233,7 +239,9 @@ export async function getGameLogBatting(
     const splits: GameLogSplitEntry[] = data.stats?.[0]?.splits ?? [];
     return splits.map((split) => ({
       date: formatGameDate(split.date),
+      rawDate: split.date ?? "",
       opponent: formatOpponent(split),
+      gamePk: split.game?.gamePk ?? 0,
       atBats: (split.stat.atBats as number) ?? 0,
       runs: (split.stat.runs as number) ?? 0,
       hits: (split.stat.hits as number) ?? 0,
@@ -272,7 +280,9 @@ export async function getGameLogPitching(
 
       return {
         date: formatGameDate(split.date),
+        rawDate: split.date ?? "",
         opponent: formatOpponent(split),
+        gamePk: split.game?.gamePk ?? 0,
         result,
         inningsPitched: (stat.inningsPitched as string) ?? "0.0",
         hits: (stat.hits as number) ?? 0,
@@ -287,4 +297,128 @@ export async function getGameLogPitching(
   } catch {
     return [];
   }
+}
+
+// ---- Video Highlights ----
+
+interface HighlightPlayback {
+  name?: string;
+  url?: string;
+}
+
+interface HighlightItem {
+  headline?: string;
+  blurb?: string;
+  description?: string;
+  duration?: string;
+  playbacks?: HighlightPlayback[];
+  image?: {
+    cuts?: { src?: string; width?: number }[];
+  };
+}
+
+export async function getGameHighlights(gamePk: number): Promise<VideoHighlight[]> {
+  if (!gamePk) return [];
+  try {
+    const res = await fetch(
+      `${MLB_API_BASE}/game/${gamePk}/content?highlightLimit=50`,
+      { next: { revalidate: 3600 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+
+    const items: HighlightItem[] =
+      data.highlights?.highlights?.items ?? [];
+
+    const playerName = "Ohtani";
+    const relevant = items.filter((item) => {
+      const text = `${item.headline ?? ""} ${item.blurb ?? ""} ${item.description ?? ""}`;
+      return text.toLowerCase().includes(playerName.toLowerCase());
+    });
+
+    return relevant.map((item) => {
+      const mp4 = item.playbacks?.find((p) => p.name === "mp4Avc");
+      const fallback = item.playbacks?.find((p) => p.url?.includes(".mp4"));
+      const videoUrl = mp4?.url ?? fallback?.url ?? "";
+
+      let thumbnailUrl: string | undefined;
+      if (item.image?.cuts && Array.isArray(item.image.cuts)) {
+        thumbnailUrl = item.image.cuts[0]?.src;
+      }
+
+      return {
+        title: item.headline ?? "",
+        description: item.blurb ?? item.description ?? "",
+        duration: item.duration ?? "",
+        videoUrl,
+        thumbnailUrl,
+      };
+    }).filter((v) => v.videoUrl);
+  } catch {
+    return [];
+  }
+}
+
+// ---- Period Stats (Weekly / Monthly) ----
+
+export function aggregatePeriodStats(
+  games: GameLogBatting[],
+  mode: "weekly" | "monthly"
+): PeriodStats[] {
+  if (games.length === 0) return [];
+
+  const groups = new Map<string, GameLogBatting[]>();
+
+  for (const game of games) {
+    if (!game.rawDate) continue;
+    const d = new Date(game.rawDate);
+    if (isNaN(d.getTime())) continue;
+
+    let key: string;
+    if (mode === "monthly") {
+      key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
+    } else {
+      // Weekly: ISO week starting Monday
+      const dayOfWeek = d.getDay();
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - ((dayOfWeek + 6) % 7));
+      key = `${monday.getMonth() + 1}/${monday.getDate()}~`;
+    }
+
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(game);
+  }
+
+  const results: PeriodStats[] = [];
+  for (const [period, periodGames] of groups) {
+    const totalAb = periodGames.reduce((s, g) => s + g.atBats, 0);
+    const totalHits = periodGames.reduce((s, g) => s + g.hits, 0);
+    const totalHr = periodGames.reduce((s, g) => s + g.homeRuns, 0);
+    const totalRbi = periodGames.reduce((s, g) => s + g.rbi, 0);
+    const totalSb = periodGames.reduce((s, g) => s + g.stolenBases, 0);
+    const totalBb = periodGames.reduce((s, g) => s + g.baseOnBalls, 0);
+    const totalDoubles = periodGames.reduce((s, g) => s + g.doubles, 0);
+    const totalTriples = periodGames.reduce((s, g) => s + g.triples, 0);
+
+    const avg = totalAb > 0 ? (totalHits / totalAb).toFixed(3) : ".000";
+    const pa = totalAb + totalBb;
+    const obp = pa > 0 ? ((totalHits + totalBb) / pa).toFixed(3) : ".000";
+    const tb = totalHits + totalDoubles + totalTriples * 2 + totalHr * 3;
+    const slg = totalAb > 0 ? (tb / totalAb).toFixed(3) : ".000";
+    const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3);
+
+    results.push({
+      period,
+      games: periodGames.length,
+      atBats: totalAb,
+      hits: totalHits,
+      homeRuns: totalHr,
+      rbi: totalRbi,
+      stolenBases: totalSb,
+      avg,
+      ops,
+    });
+  }
+
+  return results;
 }

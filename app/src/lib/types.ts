@@ -61,7 +61,9 @@ export interface PlayerInfo {
 
 export interface GameLogBatting {
   date: string;
+  rawDate: string;
   opponent: string;
+  gamePk: number;
   atBats: number;
   runs: number;
   hits: number;
@@ -77,7 +79,9 @@ export interface GameLogBatting {
 
 export interface GameLogPitching {
   date: string;
+  rawDate: string;
   opponent: string;
+  gamePk: number;
   result: string;
   inningsPitched: string;
   hits: number;
@@ -87,6 +91,26 @@ export interface GameLogPitching {
   strikeOuts: number;
   homeRuns: number;
   era: string;
+}
+
+export interface VideoHighlight {
+  title: string;
+  description: string;
+  duration: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+}
+
+export interface PeriodStats {
+  period: string;
+  games: number;
+  atBats: number;
+  hits: number;
+  homeRuns: number;
+  rbi: number;
+  stolenBases: number;
+  avg: string;
+  ops: string;
 }
 
 export interface NewsArticle {
