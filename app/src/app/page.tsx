@@ -1,7 +1,9 @@
-import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats } from "@/lib/mlb-api";
+import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import StatCard from "@/components/StatCard";
 import HrChart from "@/components/HrChart";
 import PitchingChart from "@/components/PitchingChart";
+import OpsChart from "@/components/OpsChart";
+import AutoRefresh from "@/components/AutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -14,22 +16,36 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* Auto-refresh indicator */}
+      <div className="flex justify-end">
+        <AutoRefresh intervalMs={300000} />
+      </div>
+
       {/* Player Profile */}
-      <section className="rounded-xl border border-dodger-blue/15 bg-white p-6 dark:border-dodger-blue/25 dark:bg-gray-900">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-dodger-blue text-3xl text-white">
-            ⚾
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-dodger-blue via-dodger-blue to-dodger-blue-dark p-6 text-white shadow-lg">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-white/5 to-transparent" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
+          <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-white/30 bg-white/10 shadow-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={OHTANI_HEADSHOT_URL}
+              alt={player.fullName}
+              className="h-full w-full object-cover"
+            />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold tracking-tight">
               {player.fullName}
             </h1>
-            <p className="text-dodger-blue font-medium dark:text-dodger-blue">
+            <p className="mt-1 text-lg font-medium text-white/80">
               #{player.number} | {player.currentTeam} | {player.position}
             </p>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">
-              {player.height} / {player.weight}lbs | 打席: {player.batSide} | 投球: {player.throwSide}
-            </p>
+            <div className="mt-2 flex flex-wrap gap-3 text-sm text-white/60">
+              <span>{player.height} / {player.weight}lbs</span>
+              <span>打席: {player.batSide}</span>
+              <span>投球: {player.throwSide}</span>
+              <span>出身: {player.birthCountry}</span>
+            </div>
           </div>
         </div>
       </section>
@@ -41,10 +57,10 @@ export default async function DashboardPage() {
             {current.season}シーズン 打撃成績
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-            <StatCard label="打率" value={current.batting.avg} sub="AVG" />
-            <StatCard label="本塁打" value={current.batting.homeRuns} sub="HR" />
+            <StatCard label="打率" value={current.batting.avg} sub="AVG" highlight />
+            <StatCard label="本塁打" value={current.batting.homeRuns} sub="HR" highlight />
             <StatCard label="打点" value={current.batting.rbi} sub="RBI" />
-            <StatCard label="OPS" value={current.batting.ops} />
+            <StatCard label="OPS" value={current.batting.ops} highlight />
             <StatCard label="盗塁" value={current.batting.stolenBases} sub="SB" />
             <StatCard label="安打" value={current.batting.hits} sub="H" />
             <StatCard label="得点" value={current.batting.runs} sub="R" />
@@ -62,9 +78,9 @@ export default async function DashboardPage() {
             {current.season}シーズン 投球成績
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-            <StatCard label="防御率" value={current.pitching.era} sub="ERA" />
+            <StatCard label="防御率" value={current.pitching.era} sub="ERA" highlight />
             <StatCard label="勝敗" value={`${current.pitching.wins}-${current.pitching.losses}`} sub="W-L" />
-            <StatCard label="奪三振" value={current.pitching.strikeOuts} sub="SO" />
+            <StatCard label="奪三振" value={current.pitching.strikeOuts} sub="SO" highlight />
             <StatCard label="WHIP" value={current.pitching.whip} />
             <StatCard label="投球回" value={current.pitching.inningsPitched} sub="IP" />
             <StatCard label="先発" value={current.pitching.gamesStarted} sub="GS" />
@@ -78,7 +94,7 @@ export default async function DashboardPage() {
 
       {/* No data message */}
       {!current && allStats.length === 0 && (
-        <section className="rounded-xl border border-dodger-blue/15 bg-white p-12 text-center dark:border-dodger-blue/25 dark:bg-gray-900">
+        <section className="rounded-2xl border border-border bg-surface p-12 text-center">
           <p className="text-lg text-gray-500 dark:text-gray-400">
             MLB APIからデータを取得できませんでした
           </p>
@@ -90,10 +106,15 @@ export default async function DashboardPage() {
 
       {/* Charts */}
       {allStats.length > 0 && (
-        <section className="grid gap-6 lg:grid-cols-2">
-          <HrChart data={allStats} />
-          <PitchingChart data={allStats} />
-        </section>
+        <>
+          <section className="grid gap-6 lg:grid-cols-2">
+            <HrChart data={allStats} />
+            <PitchingChart data={allStats} />
+          </section>
+          <section>
+            <OpsChart data={allStats} />
+          </section>
+        </>
       )}
     </div>
   );

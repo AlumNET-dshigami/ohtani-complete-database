@@ -1,45 +1,49 @@
 "use client";
 
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
-  Cell,
 } from "recharts";
 import type { SeasonStats } from "@/lib/types";
 
-interface HrChartProps {
+interface OpsChartProps {
   data: SeasonStats[];
 }
 
-export default function HrChart({ data }: HrChartProps) {
+export default function OpsChart({ data }: OpsChartProps) {
   const chartData = data
     .filter((s) => s.batting)
     .map((s) => ({
       season: s.season,
-      HR: s.batting!.homeRuns,
+      OPS: parseFloat(s.batting!.ops),
+      OBP: parseFloat(s.batting!.obp),
+      SLG: parseFloat(s.batting!.slg),
     }));
 
   if (chartData.length === 0) return null;
 
-  const maxHr = Math.max(...chartData.map((d) => d.HR));
-
   return (
     <div className="rounded-xl border border-border bg-surface p-6">
       <h3 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
-        シーズン別ホームラン数
+        OPS推移
       </h3>
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
+          <AreaChart data={chartData}>
+            <defs>
+              <linearGradient id="opsGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#005A9C" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#005A9C" stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="season" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} domain={[0, "auto"]} />
             <Tooltip
               contentStyle={{
                 backgroundColor: "var(--surface)",
@@ -47,16 +51,15 @@ export default function HrChart({ data }: HrChartProps) {
                 borderRadius: "8px",
               }}
             />
-            <Legend />
-            <Bar dataKey="HR" radius={[4, 4, 0, 0]}>
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.HR === maxHr ? "#D4A843" : "#005A9C"}
-                />
-              ))}
-            </Bar>
-          </BarChart>
+            <Area
+              type="monotone"
+              dataKey="OPS"
+              stroke="#005A9C"
+              fill="url(#opsGradient)"
+              strokeWidth={2}
+              dot={{ r: 4, fill: "#005A9C" }}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>

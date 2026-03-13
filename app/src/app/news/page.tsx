@@ -1,5 +1,6 @@
 import { getOhtaniNews } from "@/lib/news-api";
 import NewsCard from "@/components/NewsCard";
+import AutoRefresh from "@/components/AutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -8,17 +9,20 @@ export default async function NewsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          ニュース
-        </h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
-          大谷翔平に関する最新ニュース記事
-        </p>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            ニュース
+          </h1>
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
+            大谷翔平に関する最新ニュース記事
+          </p>
+        </div>
+        <AutoRefresh intervalMs={300000} />
       </div>
 
       {articles.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center dark:border-gray-800 dark:bg-gray-900">
+        <div className="rounded-2xl border border-border bg-surface p-12 text-center">
           <p className="text-lg text-gray-500 dark:text-gray-400">
             現在ニュース記事はありません
           </p>

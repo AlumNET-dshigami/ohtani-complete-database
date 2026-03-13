@@ -14,7 +14,7 @@ export default function NewsCard({ article }: { article: NewsArticle }) {
       href={article.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block rounded-xl border border-dodger-blue/15 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-dodger-blue/25 dark:bg-gray-900"
+      className="card-hover group block rounded-xl border border-border bg-surface shadow-sm"
     >
       {article.imageUrl && (
         <div className="overflow-hidden rounded-t-xl">
@@ -22,13 +22,13 @@ export default function NewsCard({ article }: { article: NewsArticle }) {
           <img
             src={article.imageUrl}
             alt={article.title}
-            className="h-48 w-full object-cover transition-transform group-hover:scale-105"
+            className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
       )}
       <div className="p-4">
         <div className="mb-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-          <span className="rounded bg-dodger-blue-light px-2 py-0.5 font-medium text-dodger-blue dark:bg-dodger-blue/20 dark:text-white">
+          <span className="rounded-full bg-dodger-blue px-2.5 py-0.5 font-medium text-white">
             {article.source}
           </span>
           {date && <span>{date}</span>}
