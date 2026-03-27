@@ -1,10 +1,30 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Header from "@/components/Header";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import InstallPrompt from "@/components/InstallPrompt";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "大谷翔平 データベース",
   description: "大谷翔平の成績をリアルタイムで可視化 - 打撃・投球の全成績とニュース",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "大谷DB",
+  },
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#005A9C",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -15,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body className="antialiased bg-background text-foreground">
+        <ServiceWorkerRegister />
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
         <footer className="border-t border-border">
@@ -23,6 +44,7 @@ export default function RootLayout({
             {" "}からリアルタイムでデータを取得 | 5分ごとに自動更新
           </div>
         </footer>
+        <InstallPrompt />
       </body>
     </html>
   );
