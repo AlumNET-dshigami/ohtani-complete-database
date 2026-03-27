@@ -1,17 +1,22 @@
-import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
+import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, getGameLogBatting, getGameLogPitching, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import StatCard from "@/components/StatCard";
 import HrChart from "@/components/HrChart";
 import PitchingChart from "@/components/PitchingChart";
 import OpsChart from "@/components/OpsChart";
 import AutoRefresh from "@/components/AutoRefresh";
+import SeasonProgressChart from "@/components/SeasonProgressChart";
+import PitchingProgressChart from "@/components/PitchingProgressChart";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [player, current, allStats] = await Promise.all([
+  const currentYear = new Date().getFullYear();
+  const [player, current, allStats, battingLog, pitchingLog] = await Promise.all([
     getPlayerInfo(),
     getCurrentSeasonStats(),
     getYearByYearStats(),
+    getGameLogBatting(currentYear, "R"),
+    getGameLogPitching(currentYear, "R"),
   ]);
 
   return (
@@ -104,12 +109,32 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {/* Charts */}
+      {/* Current Season Progress */}
+      {(battingLog.length > 0 || pitchingLog.length > 0) && (
+        <section>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+            {currentYear}シーズン 推移
+          </h2>
+          {battingLog.length > 0 && <SeasonProgressChart games={battingLog} />}
+          {pitchingLog.length > 0 && (
+            <div className="mt-6">
+              <PitchingProgressChart games={pitchingLog} />
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Career Charts */}
       {allStats.length > 0 && (
         <>
-          <section className="grid gap-6 lg:grid-cols-2">
-            <HrChart data={allStats} />
-            <PitchingChart data={allStats} />
+          <section>
+            <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+              通算成績チャート
+            </h2>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <HrChart data={allStats} />
+              <PitchingChart data={allStats} />
+            </div>
           </section>
           <section>
             <OpsChart data={allStats} />
