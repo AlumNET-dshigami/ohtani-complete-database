@@ -9,6 +9,7 @@ import SeasonProgressChart from "@/components/SeasonProgressChart";
 import PitchingProgressChart from "@/components/PitchingProgressChart";
 import AdvancedStats from "@/components/AdvancedStats";
 import JapaneseVideoLinks from "@/components/JapaneseVideoLinks";
+import RakutenGoods from "@/components/RakutenGoods";
 
 export const dynamic = "force-dynamic";
 
@@ -137,6 +138,9 @@ export default async function DashboardPage() {
 
         return <AdvancedStats battingStats={battingStats} pitchingStats={pitchingStats} />;
       })()}
+
+      {/* Rakuten Affiliate Goods */}
+      <RakutenGoods />
 
       {/* Japanese Video Links */}
       <JapaneseVideoLinks />
