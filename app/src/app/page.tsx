@@ -1,17 +1,26 @@
-import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
+import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, getGameLogBatting, getGameLogPitching, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
+import { calcAdvancedBatting, calcAdvancedPitching } from "@/lib/sabermetrics";
 import StatCard from "@/components/StatCard";
 import HrChart from "@/components/HrChart";
 import PitchingChart from "@/components/PitchingChart";
 import OpsChart from "@/components/OpsChart";
 import AutoRefresh from "@/components/AutoRefresh";
+import SeasonProgressChart from "@/components/SeasonProgressChart";
+import PitchingProgressChart from "@/components/PitchingProgressChart";
+import AdvancedStats from "@/components/AdvancedStats";
+import JapaneseVideoLinks from "@/components/JapaneseVideoLinks";
+import RakutenGoods from "@/components/RakutenGoods";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [player, current, allStats] = await Promise.all([
+  const currentYear = new Date().getFullYear();
+  const [player, current, allStats, battingLog, pitchingLog] = await Promise.all([
     getPlayerInfo(),
     getCurrentSeasonStats(),
     getYearByYearStats(),
+    getGameLogBatting(currentYear, "R"),
+    getGameLogPitching(currentYear, "R"),
   ]);
 
   return (
@@ -92,6 +101,50 @@ export default async function DashboardPage() {
         </section>
       )}
 
+      {/* Advanced Sabermetrics */}
+      {current?.batting && current?.pitching && (() => {
+        const advBat = calcAdvancedBatting(current.batting);
+        const advPit = calcAdvancedPitching(current.pitching);
+
+        const battingStats = [
+          { label: "ISO", value: advBat.iso, desc: "Isolated Power（長打力）= 長打率 - 打率。純粋なパワーを測る", highlight: true },
+          { label: "BABIP", value: advBat.babip, desc: "インプレー打球の打率。運と打球の質を測る指標（平均.300前後）" },
+          { label: "BB%", value: advBat.bbRate, desc: "四球率。打席に対する四球の割合。選球眼を測る" },
+          { label: "K%", value: advBat.kRate, desc: "三振率。打席に対する三振の割合。低いほど良い" },
+          { label: "BB/K", value: advBat.bbPerK, desc: "四球と三振の比率。高いほど選球眼が良い", highlight: true },
+          { label: "AB/HR", value: advBat.abPerHr, desc: "本塁打を1本打つのに必要な打数。低いほど効率的" },
+          { label: "SecAVG", value: advBat.secAvg, desc: "二次打率 = (塁打 - 安打 + 四球 + 盗塁) / 打数。打率以外の貢献", highlight: true },
+          { label: "TA", value: advBat.ta, desc: "Total Average（総合指標）。全攻撃イベントを考慮した打撃評価" },
+          { label: "RC", value: advBat.rc, desc: "Runs Created（得点創出）。ビル・ジェームズ考案の得点貢献度" },
+          { label: "OBP", value: current.batting.obp, desc: "出塁率。打率+四球+死球。最重要指標の一つ", highlight: true },
+          { label: "SLG", value: current.batting.slg, desc: "長打率。塁打数/打数。パワーの指標" },
+          { label: "PA/BB", value: advBat.paPerBb, desc: "四球1つあたりの打席数。選球眼の別指標" },
+        ];
+
+        const pitchingStats = [
+          { label: "FIP", value: advPit.fip, desc: "Fielding Independent Pitching。守備に依存しない投球力。ERAより真の実力を反映", highlight: true },
+          { label: "K/9", value: advPit.kPer9, desc: "9イニングあたりの奪三振数。支配力を測る" },
+          { label: "BB/9", value: advPit.bbPer9, desc: "9イニングあたりの与四球数。制球力を測る" },
+          { label: "H/9", value: advPit.hPer9, desc: "9イニングあたりの被安打数" },
+          { label: "HR/9", value: advPit.hrPer9, desc: "9イニングあたりの被本塁打数。低いほど良い" },
+          { label: "K/BB", value: advPit.kPerBb, desc: "奪三振と与四球の比率。制球力の総合指標", highlight: true },
+          { label: "K%", value: advPit.kRate, desc: "対戦打者に対する三振割合。高いほど支配的", highlight: true },
+          { label: "BB%", value: advPit.bbRate, desc: "対戦打者に対する四球割合。低いほど良い" },
+          { label: "LOB%", value: advPit.lob, desc: "残塁率。出塁した走者をホームに返さなかった割合" },
+          { label: "WHIP", value: current.pitching.whip, desc: "1イニングあたりの出塁許可数（安打+四球）。1.00以下がエース級" },
+          { label: "ERA", value: current.pitching.era, desc: "防御率。9イニングあたりの自責点。投手の基本指標" },
+          { label: "IP", value: current.pitching.inningsPitched, desc: "投球回数。長く投げるほどチームへの貢献大" },
+        ];
+
+        return <AdvancedStats battingStats={battingStats} pitchingStats={pitchingStats} />;
+      })()}
+
+      {/* Rakuten Affiliate Goods */}
+      <RakutenGoods />
+
+      {/* Japanese Video Links */}
+      <JapaneseVideoLinks />
+
       {/* No data message */}
       {!current && allStats.length === 0 && (
         <section className="rounded-2xl border border-border bg-surface p-12 text-center">
@@ -104,12 +157,32 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {/* Charts */}
+      {/* Current Season Progress */}
+      {(battingLog.length > 0 || pitchingLog.length > 0) && (
+        <section>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+            {currentYear}シーズン 推移
+          </h2>
+          {battingLog.length > 0 && <SeasonProgressChart games={battingLog} />}
+          {pitchingLog.length > 0 && (
+            <div className="mt-6">
+              <PitchingProgressChart games={pitchingLog} />
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Career Charts */}
       {allStats.length > 0 && (
         <>
-          <section className="grid gap-6 lg:grid-cols-2">
-            <HrChart data={allStats} />
-            <PitchingChart data={allStats} />
+          <section>
+            <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+              通算成績チャート
+            </h2>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <HrChart data={allStats} />
+              <PitchingChart data={allStats} />
+            </div>
           </section>
           <section>
             <OpsChart data={allStats} />

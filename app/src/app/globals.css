@@ -116,3 +116,8 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--dodger-blue);
 }
+
+/* Safe area for bottom nav on notched devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

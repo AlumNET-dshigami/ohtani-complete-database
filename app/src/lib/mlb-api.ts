@@ -198,19 +198,44 @@ interface GameLogSplitEntry {
   stat: Record<string, unknown>;
 }
 
-function buildGameLogUrl(
+function buildGameLogUrls(
   group: "hitting" | "pitching",
   season: number,
   gameType: string
-): string {
+): string[] {
   if (gameType === "WBC") {
-    return `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&sportId=51`;
+    // Try multiple URL patterns for WBC data
+    return [
+      `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&sportId=51`,
+      `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&sportId=51&gameType=W`,
+      `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&sportId=51&gameType=R`,
+      `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&gameType=W&sportId=51`,
+    ];
   }
   if (gameType === "POST") {
-    return `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&gameType=F&gameType=D&gameType=L&gameType=W`;
+    return [
+      `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&gameType=F&gameType=D&gameType=L&gameType=W`,
+    ];
   }
   // S = Spring Training, E = Exhibition, A = All-Star, R = Regular Season
-  return `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&gameType=${gameType}`;
+  return [
+    `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats?stats=gameLog&group=${group}&season=${season}&gameType=${gameType}`,
+  ];
+}
+
+async function fetchWithFallback(urls: string[]): Promise<GameLogSplitEntry[]> {
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { next: { revalidate: 300 } });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const splits: GameLogSplitEntry[] = data.stats?.[0]?.splits ?? [];
+      if (splits.length > 0) return splits;
+    } catch {
+      continue;
+    }
+  }
+  return [];
 }
 
 function formatGameDate(dateStr: string): string {
@@ -231,12 +256,8 @@ export async function getGameLogBatting(
   gameType: string = "R"
 ): Promise<GameLogBatting[]> {
   try {
-    const url = buildGameLogUrl("hitting", season, gameType);
-    const res = await fetch(url, { next: { revalidate: 300 } });
-    if (!res.ok) return [];
-    const data = await res.json();
-
-    const splits: GameLogSplitEntry[] = data.stats?.[0]?.splits ?? [];
+    const urls = buildGameLogUrls("hitting", season, gameType);
+    const splits = await fetchWithFallback(urls);
     return splits.map((split) => ({
       date: formatGameDate(split.date),
       rawDate: split.date ?? "",
@@ -264,12 +285,8 @@ export async function getGameLogPitching(
   gameType: string = "R"
 ): Promise<GameLogPitching[]> {
   try {
-    const url = buildGameLogUrl("pitching", season, gameType);
-    const res = await fetch(url, { next: { revalidate: 300 } });
-    if (!res.ok) return [];
-    const data = await res.json();
-
-    const splits: GameLogSplitEntry[] = data.stats?.[0]?.splits ?? [];
+    const urls = buildGameLogUrls("pitching", season, gameType);
+    const splits = await fetchWithFallback(urls);
     return splits.map((split) => {
       const stat = split.stat;
       let result = "-";
