@@ -22,34 +22,6 @@ const GOODS: GoodsItem[] = [
     tag: "人気",
   },
   {
-    title: "大谷翔平 ドジャース キャップ New Era 59FIFTY",
-    imageUrl: "",
-    price: "",
-    affiliateUrl: buildAffiliateUrl("https://search.rakuten.co.jp/search/mall/%E5%A4%A7%E8%B0%B7%E7%BF%94%E5%B9%B3+%E3%82%AD%E3%83%A3%E3%83%83%E3%83%97+%E3%83%89%E3%82%B8%E3%83%A3%E3%83%BC%E3%82%B9/"),
-    tag: "キャップ",
-  },
-  {
-    title: "大谷翔平 フィギュア・ボブルヘッド",
-    imageUrl: "",
-    price: "",
-    affiliateUrl: buildAffiliateUrl("https://search.rakuten.co.jp/search/mall/%E5%A4%A7%E8%B0%B7%E7%BF%94%E5%B9%B3+%E3%83%95%E3%82%A3%E3%82%AE%E3%83%A5%E3%82%A2/"),
-    tag: "コレクション",
-  },
-  {
-    title: "大谷翔平 サイン入りグッズ",
-    imageUrl: "",
-    price: "",
-    affiliateUrl: buildAffiliateUrl("https://search.rakuten.co.jp/search/mall/%E5%A4%A7%E8%B0%B7%E7%BF%94%E5%B9%B3+%E3%82%B5%E3%82%A4%E3%83%B3/"),
-    tag: "限定",
-  },
-  {
-    title: "大谷翔平 Tシャツ・アパレル",
-    imageUrl: "",
-    price: "",
-    affiliateUrl: buildAffiliateUrl("https://search.rakuten.co.jp/search/mall/%E5%A4%A7%E8%B0%B7%E7%BF%94%E5%B9%B3+T%E3%82%B7%E3%83%A3%E3%83%84+%E3%83%89%E3%82%B8%E3%83%A3%E3%83%BC%E3%82%B9/"),
-    tag: "ウェア",
-  },
-  {
     title: "大谷翔平 グッズをもっと探す",
     imageUrl: "",
     price: "",
@@ -75,7 +47,7 @@ export default function RakutenGoods() {
         </a>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3">
         {GOODS.map((item) => (
           <a
             key={item.title}
