@@ -1,4 +1,4 @@
-import type { BattingStats, PitchingStats } from "./types";
+import type { BattingStats, PitchingStats, SeasonStats } from "./types";
 
 // ---- Batting Advanced Stats ----
 
@@ -149,4 +149,79 @@ export function calcAdvancedPitching(s: PitchingStats): AdvancedPitchingStats {
     pitchesPerIp: "-",
     qualityStartRate: "-",
   };
+}
+
+// ---- WAR Estimation ----
+
+export interface WAREstimate {
+  battingWAR: number;
+  pitchingWAR: number;
+  totalWAR: number;
+}
+
+// League average constants (approximate MLB averages)
+const LG_OPS = 0.710;
+const LG_ERA = 4.20;
+const RUNS_PER_WIN = 10;
+
+/**
+ * Estimate batting WAR from available stats.
+ * Formula: ((OPS - lgOPS) / lgOPS) * PA * 0.8 / RPW + replacement
+ * Replacement level ≈ 2.0 * (PA / 600)
+ */
+function estimateBattingWAR(s: BattingStats): number {
+  const ops = parseFloat(s.ops) || 0;
+  const ab = s.atBats || 0;
+  const bb = s.baseOnBalls || 0;
+  const pa = ab + bb;
+
+  if (pa === 0) return 0;
+
+  const runsAboveAvg = ((ops - LG_OPS) / LG_OPS) * pa * 0.8;
+  const replacement = 2.0 * (pa / 600);
+  return (runsAboveAvg + replacement) / RUNS_PER_WIN;
+}
+
+/**
+ * Estimate pitching WAR from available stats.
+ * Formula: ((lgERA - ERA) * IP / 9 + replacement) / RPW
+ * Replacement level ≈ 0.3 * (IP / 200)
+ */
+function estimatePitchingWAR(s: PitchingStats): number {
+  const era = parseFloat(s.era) || 0;
+  const ip = parseFloat(s.inningsPitched) || 0;
+
+  if (ip === 0) return 0;
+
+  const runsAboveAvg = ((LG_ERA - era) * ip) / 9;
+  const replacement = 0.3 * (ip / 200);
+  return (runsAboveAvg + replacement) / RUNS_PER_WIN;
+}
+
+export function estimateSeasonWAR(batting: BattingStats | null, pitching: PitchingStats | null): WAREstimate {
+  const bWAR = batting ? Math.max(estimateBattingWAR(batting), -1) : 0;
+  const pWAR = pitching ? Math.max(estimatePitchingWAR(pitching), -1) : 0;
+
+  return {
+    battingWAR: Math.round(bWAR * 10) / 10,
+    pitchingWAR: Math.round(pWAR * 10) / 10,
+    totalWAR: Math.round((bWAR + pWAR) * 10) / 10,
+  };
+}
+
+export interface CareerWAREntry {
+  season: string;
+  battingWAR: number;
+  pitchingWAR: number;
+  totalWAR: number;
+}
+
+export function calcCareerWAR(allStats: SeasonStats[]): CareerWAREntry[] {
+  return allStats.map((s) => {
+    const war = estimateSeasonWAR(s.batting, s.pitching);
+    return {
+      season: s.season,
+      ...war,
+    };
+  });
 }

@@ -1,9 +1,10 @@
 import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, getGameLogBatting, getGameLogPitching, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
-import { calcAdvancedBatting, calcAdvancedPitching } from "@/lib/sabermetrics";
+import { calcAdvancedBatting, calcAdvancedPitching, estimateSeasonWAR, calcCareerWAR } from "@/lib/sabermetrics";
 import StatCard from "@/components/StatCard";
 import HrChart from "@/components/HrChart";
 import PitchingChart from "@/components/PitchingChart";
 import OpsChart from "@/components/OpsChart";
+import WARChart from "@/components/WARChart";
 import AutoRefresh from "@/components/AutoRefresh";
 import SeasonProgressChart from "@/components/SeasonProgressChart";
 import PitchingProgressChart from "@/components/PitchingProgressChart";
@@ -139,6 +140,26 @@ export default async function DashboardPage() {
         return <AdvancedStats battingStats={battingStats} pitchingStats={pitchingStats} />;
       })()}
 
+      {/* WAR Estimate */}
+      {current && (() => {
+        const war = estimateSeasonWAR(current.batting, current.pitching);
+        return (
+          <section>
+            <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+              {current.season}シーズン WAR（推定）
+            </h2>
+            <div className="grid grid-cols-3 gap-3">
+              <StatCard label="打撃WAR" value={war.battingWAR.toFixed(1)} sub="bWAR" highlight />
+              <StatCard label="投球WAR" value={war.pitchingWAR.toFixed(1)} sub="pWAR" />
+              <StatCard label="合計WAR" value={war.totalWAR.toFixed(1)} sub="Total" highlight />
+            </div>
+            <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500">
+              ※ OPS・ERA等から簡易推定した参考値です（公式WAR値とは異なります）
+            </p>
+          </section>
+        );
+      })()}
+
       {/* Rakuten Affiliate Goods */}
       <RakutenGoods />
 
@@ -173,22 +194,28 @@ export default async function DashboardPage() {
       )}
 
       {/* Career Charts */}
-      {allStats.length > 0 && (
-        <>
-          <section>
-            <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
-              通算成績チャート
-            </h2>
-            <div className="grid gap-6 lg:grid-cols-2">
-              <HrChart data={allStats} />
-              <PitchingChart data={allStats} />
-            </div>
-          </section>
-          <section>
-            <OpsChart data={allStats} />
-          </section>
-        </>
-      )}
+      {allStats.length > 0 && (() => {
+        const careerWAR = calcCareerWAR(allStats);
+        return (
+          <>
+            <section>
+              <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+                通算成績チャート
+              </h2>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <HrChart data={allStats} />
+                <PitchingChart data={allStats} />
+              </div>
+            </section>
+            <section>
+              <WARChart data={careerWAR} />
+            </section>
+            <section>
+              <OpsChart data={allStats} />
+            </section>
+          </>
+        );
+      })()}
     </div>
   );
 }

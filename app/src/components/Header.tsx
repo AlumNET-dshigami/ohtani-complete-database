@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/", label: "ダッシュボード", icon: "📊" },
   { href: "/gamelog", label: "試合結果", icon: "📋" },
   { href: "/stats", label: "通算成績", icon: "📈" },
+  { href: "/rankings", label: "ランキング", icon: "🏆" },
   { href: "/news", label: "ニュース", icon: "📰" },
 ];
 
