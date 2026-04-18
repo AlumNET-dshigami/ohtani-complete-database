@@ -10,6 +10,7 @@ export interface PlayerSummary {
   position: string;
   number: string;
   headshotUrl: string;
+  birthCountry: string;
   batting: BattingStats | null;
   pitching: PitchingStats | null;
 }
@@ -20,6 +21,7 @@ interface PersonApi {
   currentTeam?: { name?: string };
   primaryPosition?: { name?: string; abbreviation?: string };
   primaryNumber?: string;
+  birthCountry?: string;
 }
 
 interface SplitStat {
@@ -128,6 +130,7 @@ export async function getPlayerSummary(
       position: person.primaryPosition?.abbreviation ?? "N/A",
       number: person.primaryNumber ?? "-",
       headshotUrl: buildHeadshotUrl(playerId),
+      birthCountry: person.birthCountry ?? "",
       batting,
       pitching,
     };
@@ -144,4 +147,38 @@ export async function getMultiplePlayerSummaries(
     players.map((p) => getPlayerSummary(p.id, p.nameJa, season))
   );
   return results.filter((r): r is PlayerSummary => r !== null);
+}
+
+// ---- Active players by country ----
+
+interface SportPlayerEntry {
+  id?: number;
+  fullName?: string;
+  birthCountry?: string;
+  primaryPosition?: { abbreviation?: string };
+}
+
+/**
+ * Fetch all active MLB players born in the given country for the season.
+ * Returns list of player IDs so they can be hydrated with full stats.
+ */
+export async function getActivePlayersByCountry(
+  season: number,
+  country: string
+): Promise<{ id: number; fullName: string }[]> {
+  try {
+    const res = await fetch(
+      `${MLB_API_BASE}/sports/1/players?season=${season}&fields=people,id,fullName,birthCountry`,
+      { next: { revalidate: 3600 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const people: SportPlayerEntry[] = data.people ?? [];
+
+    return people
+      .filter((p) => p.birthCountry === country && p.id)
+      .map((p) => ({ id: p.id!, fullName: p.fullName ?? "Unknown" }));
+  } catch {
+    return [];
+  }
 }
