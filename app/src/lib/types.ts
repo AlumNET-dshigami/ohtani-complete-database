@@ -113,6 +113,14 @@ export interface PeriodStats {
   ops: string;
 }
 
+export interface WARChartEntry {
+  season: string;
+  bWAR: number | null;
+  fWAR: number | null;
+  estimate: number | null;
+  league: string;
+}
+
 export interface NewsArticle {
   title: string;
   description: string;

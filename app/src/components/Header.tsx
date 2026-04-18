@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
 const NAV_ITEMS = [
-  { href: "/", label: "ダッシュボード", icon: "📊" },
-  { href: "/gamelog", label: "試合結果", icon: "📋" },
-  { href: "/stats", label: "通算成績", icon: "📈" },
-  { href: "/rankings", label: "ランキング", icon: "🏆" },
+  { href: "/", label: "ホーム", icon: "📊" },
+  { href: "/gamelog", label: "試合", icon: "📋" },
+  { href: "/stats", label: "通算", icon: "📈" },
+  { href: "/rankings", label: "順位", icon: "🏆" },
+  { href: "/japanese", label: "日本人", icon: "🇯🇵" },
+  { href: "/compare", label: "比較", icon: "🆚" },
   { href: "/news", label: "ニュース", icon: "📰" },
 ];
 
@@ -55,7 +57,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                className={`rounded-lg px-2.5 py-2 text-xs font-medium transition-all whitespace-nowrap ${
                   isActive
                     ? "bg-white/20 text-white shadow-inner"
                     : "text-white/70 hover:bg-white/10 hover:text-white"
