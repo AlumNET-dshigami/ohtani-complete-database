@@ -26,7 +26,7 @@ export default function WARChart({ data }: WARChartProps) {
         WAR推移
       </h3>
       <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-        bWAR (Baseball-Reference) / fWAR (FanGraphs) — 今季は推定値
+        fWAR（<a href="https://www.fangraphs.com/leaders/war" target="_blank" rel="noopener noreferrer" className="underline hover:text-dodger-blue">FanGraphs</a>） / bWAR（Baseball-Reference） — 今季進行中は推定値
       </p>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
@@ -92,7 +92,7 @@ export default function WARChart({ data }: WARChartProps) {
         </ResponsiveContainer>
       </div>
       <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 text-center">
-        ※ 過去シーズンはBaseball-Reference / FanGraphsの公式値。今季は簡易推定値
+        ※ データソース: FanGraphs / Baseball-Reference（過去シーズン）、今季はOPS/ERAからの簡易推定
       </p>
     </div>
   );

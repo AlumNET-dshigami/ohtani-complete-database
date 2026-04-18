@@ -145,20 +145,32 @@ export default async function DashboardPage() {
         const war = getCurrentWARDisplay(current.season, current.batting, current.pitching);
         return (
           <section>
-            <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
               {current.season}シーズン WAR
             </h2>
+            <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+              データソース:{" "}
+              <a
+                href="https://www.fangraphs.com/leaders/war"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-dodger-blue hover:underline"
+              >
+                FanGraphs
+              </a>
+              {" / "}Baseball-Reference
+            </p>
             {war.source === "real" ? (
               <div className="grid grid-cols-2 gap-3">
-                <StatCard label="bWAR" value={war.bWAR} sub="Baseball-Reference" highlight />
                 <StatCard label="fWAR" value={war.fWAR} sub="FanGraphs" highlight />
+                <StatCard label="bWAR" value={war.bWAR} sub="Baseball-Reference" highlight />
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <StatCard label="WAR（推定）" value={war.estimate} sub="今季進行中" highlight />
                 <div className="rounded-xl border border-border bg-surface p-4 text-xs text-gray-500 dark:text-gray-400">
                   <p className="font-bold text-gray-700 dark:text-gray-300">📊 WARについて</p>
-                  <p className="mt-1">シーズン終了後、Baseball-Reference / FanGraphsの公式値に自動更新されます。</p>
+                  <p className="mt-1">シーズン終了後、FanGraphs / Baseball-Referenceの公式値に自動更新されます。</p>
                 </div>
               </div>
             )}
