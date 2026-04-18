@@ -1,5 +1,5 @@
 import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, getGameLogBatting, getGameLogPitching, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
-import { calcAdvancedBatting, calcAdvancedPitching, estimateSeasonWAR, calcCareerWAR } from "@/lib/sabermetrics";
+import { calcAdvancedBatting, calcAdvancedPitching, getCurrentWARDisplay, buildCareerWARChartData } from "@/lib/sabermetrics";
 import StatCard from "@/components/StatCard";
 import HrChart from "@/components/HrChart";
 import PitchingChart from "@/components/PitchingChart";
@@ -140,22 +140,28 @@ export default async function DashboardPage() {
         return <AdvancedStats battingStats={battingStats} pitchingStats={pitchingStats} />;
       })()}
 
-      {/* WAR Estimate */}
+      {/* WAR Display */}
       {current && (() => {
-        const war = estimateSeasonWAR(current.batting, current.pitching);
+        const war = getCurrentWARDisplay(current.season, current.batting, current.pitching);
         return (
           <section>
             <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
-              {current.season}シーズン WAR（推定）
+              {current.season}シーズン WAR
             </h2>
-            <div className="grid grid-cols-3 gap-3">
-              <StatCard label="打撃WAR" value={war.battingWAR.toFixed(1)} sub="bWAR" highlight />
-              <StatCard label="投球WAR" value={war.pitchingWAR.toFixed(1)} sub="pWAR" />
-              <StatCard label="合計WAR" value={war.totalWAR.toFixed(1)} sub="Total" highlight />
-            </div>
-            <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500">
-              ※ OPS・ERA等から簡易推定した参考値です（公式WAR値とは異なります）
-            </p>
+            {war.source === "real" ? (
+              <div className="grid grid-cols-2 gap-3">
+                <StatCard label="bWAR" value={war.bWAR} sub="Baseball-Reference" highlight />
+                <StatCard label="fWAR" value={war.fWAR} sub="FanGraphs" highlight />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <StatCard label="WAR（推定）" value={war.estimate} sub="今季進行中" highlight />
+                <div className="rounded-xl border border-border bg-surface p-4 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="font-bold text-gray-700 dark:text-gray-300">📊 WARについて</p>
+                  <p className="mt-1">シーズン終了後、Baseball-Reference / FanGraphsの公式値に自動更新されます。</p>
+                </div>
+              </div>
+            )}
           </section>
         );
       })()}
@@ -195,7 +201,7 @@ export default async function DashboardPage() {
 
       {/* Career Charts */}
       {allStats.length > 0 && (() => {
-        const careerWAR = calcCareerWAR(allStats);
+        const careerWAR = buildCareerWARChartData(allStats);
         return (
           <>
             <section>

@@ -1,4 +1,5 @@
-import type { BattingStats, PitchingStats, SeasonStats } from "./types";
+import type { BattingStats, PitchingStats, SeasonStats, WARChartEntry } from "./types";
+import { OHTANI_WAR_HISTORY, getRealWAR } from "./ohtani-war-data";
 
 // ---- Batting Advanced Stats ----
 
@@ -224,4 +225,81 @@ export function calcCareerWAR(allStats: SeasonStats[]): CareerWAREntry[] {
       ...war,
     };
   });
+}
+
+// ---- Combined WAR (real history + current-season estimate) ----
+
+export function buildCareerWARChartData(allStats: SeasonStats[]): WARChartEntry[] {
+  const seasons = new Set<string>([
+    ...OHTANI_WAR_HISTORY.map((e) => e.season),
+    ...allStats.map((s) => s.season),
+  ]);
+  const sorted = Array.from(seasons).sort();
+
+  return sorted.map((season) => {
+    const real = getRealWAR(season);
+    const seasonStat = allStats.find((s) => s.season === season);
+    const currentYear = String(new Date().getFullYear());
+    const isCurrent = season === currentYear;
+
+    // Use real values if available; estimate for current in-progress season only
+    if (real) {
+      return {
+        season,
+        bWAR: real.bWAR,
+        fWAR: real.fWAR,
+        estimate: null,
+        league: real.league,
+      };
+    }
+
+    if (isCurrent && seasonStat) {
+      const est = estimateSeasonWAR(seasonStat.batting, seasonStat.pitching);
+      return {
+        season,
+        bWAR: null,
+        fWAR: null,
+        estimate: est.totalWAR,
+        league: "MLB",
+      };
+    }
+
+    return {
+      season,
+      bWAR: null,
+      fWAR: null,
+      estimate: null,
+      league: "MLB",
+    };
+  });
+}
+
+export interface CurrentWARDisplay {
+  bWAR: string;
+  fWAR: string;
+  estimate: string;
+  source: "real" | "estimate";
+}
+
+export function getCurrentWARDisplay(
+  season: string,
+  batting: BattingStats | null,
+  pitching: PitchingStats | null
+): CurrentWARDisplay {
+  const real = getRealWAR(season);
+  if (real) {
+    return {
+      bWAR: real.bWAR !== null ? real.bWAR.toFixed(1) : "-",
+      fWAR: real.fWAR !== null ? real.fWAR.toFixed(1) : "-",
+      estimate: "-",
+      source: "real",
+    };
+  }
+  const est = estimateSeasonWAR(batting, pitching);
+  return {
+    bWAR: "-",
+    fWAR: "-",
+    estimate: est.totalWAR.toFixed(1),
+    source: "estimate",
+  };
 }
