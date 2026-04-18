@@ -14,6 +14,9 @@ export interface LeaderCategory {
   categoryLabel: string;
   categoryKey: string;
   leaders: LeaderEntry[];
+  ohtaniRank: number | null;        // Ohtani's overall rank (null = not ranked)
+  ohtaniValue: string | null;       // Ohtani's value
+  totalRanked: number;              // Total number of ranked players we looked at
 }
 
 interface LeaderSplit {
@@ -58,7 +61,8 @@ async function fetchLeaders(
   group: "hitting" | "pitching"
 ): Promise<LeaderCategory[]> {
   const catKeys = categories.map((c) => c.key).join(",");
-  const url = `${MLB_API_BASE}/stats/leaders?leaderCategories=${catKeys}&season=${season}&sportId=1&statGroup=${group}&limit=10`;
+  // Fetch up to 300 per category so we can locate Ohtani's overall rank
+  const url = `${MLB_API_BASE}/stats/leaders?leaderCategories=${catKeys}&season=${season}&sportId=1&statGroup=${group}&limit=300`;
 
   try {
     const res = await fetch(url, { next: { revalidate: 600 } });
@@ -72,7 +76,15 @@ async function fetchLeaders(
       const catConfig = categories.find((c) => c.key === raw.leaderCategory);
       if (!catConfig) continue;
 
-      const leaders: LeaderEntry[] = (raw.leaders ?? []).map((l) => ({
+      const allLeaders = raw.leaders ?? [];
+
+      // Find Ohtani's rank across the full list
+      const ohtaniEntry = allLeaders.find((l) => l.person?.id === OHTANI_PLAYER_ID);
+      const ohtaniRank = ohtaniEntry?.rank ?? null;
+      const ohtaniValue = ohtaniEntry?.value ?? null;
+
+      // Top 10 for display
+      const leaders: LeaderEntry[] = allLeaders.slice(0, 10).map((l) => ({
         rank: l.rank ?? 0,
         playerName: l.person?.fullName ?? "N/A",
         teamName: l.team?.name ?? "N/A",
@@ -85,6 +97,9 @@ async function fetchLeaders(
         categoryLabel: catConfig.label,
         categoryKey: catConfig.key,
         leaders,
+        ohtaniRank,
+        ohtaniValue,
+        totalRanked: allLeaders.length,
       });
     }
 

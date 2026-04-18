@@ -4,12 +4,34 @@ import type { LeaderCategory } from "@/lib/rankings-api";
 export const dynamic = "force-dynamic";
 
 function LeaderBoard({ category }: { category: LeaderCategory }) {
+  const ohtaniInTop10 = category.leaders.some((l) => l.isOhtani);
+
   return (
     <div className="rounded-xl border border-border bg-surface shadow-sm overflow-hidden">
       <div className="border-b border-border bg-gradient-to-r from-dodger-blue/10 to-transparent px-4 py-3">
-        <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-          {category.categoryLabel}
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+            {category.categoryLabel}
+          </h3>
+          {category.ohtaniRank !== null && (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                category.ohtaniRank <= 3
+                  ? "bg-accent-gold text-white"
+                  : category.ohtaniRank <= 10
+                  ? "bg-dodger-blue text-white"
+                  : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+              }`}
+            >
+              大谷: {category.ohtaniRank}位 ({category.ohtaniValue})
+            </span>
+          )}
+          {category.ohtaniRank === null && (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+              大谷: 圏外
+            </span>
+          )}
+        </div>
       </div>
       <div className="divide-y divide-border">
         {category.leaders.map((leader) => (
@@ -58,6 +80,20 @@ function LeaderBoard({ category }: { category: LeaderCategory }) {
         {category.leaders.length === 0 && (
           <div className="px-4 py-6 text-center text-sm text-gray-400">
             データなし
+          </div>
+        )}
+        {!ohtaniInTop10 && category.ohtaniRank !== null && (
+          <div className="flex items-center gap-3 bg-dodger-blue/5 px-4 py-2.5 text-sm border-l-4 border-l-dodger-blue">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-dodger-blue text-xs font-bold text-white">
+              {category.ohtaniRank}
+            </span>
+            <div className="flex-1 min-w-0">
+              <span className="font-bold text-dodger-blue block">大谷 翔平</span>
+              <span className="text-[10px] text-gray-400">Los Angeles Dodgers</span>
+            </div>
+            <span className="shrink-0 font-mono text-sm font-bold text-dodger-blue">
+              {category.ohtaniValue}
+            </span>
           </div>
         )}
       </div>

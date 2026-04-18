@@ -21,11 +21,11 @@ export const OHTANI_WAR_HISTORY: OhtaniWAREntry[] = [
   { season: "2018", league: "MLB", bWAR: 2.8, fWAR: 3.8, note: "AL新人王" },
   { season: "2019", league: "MLB", bWAR: -0.1, fWAR: -0.2, note: "打者専念" },
   { season: "2020", league: "MLB", bWAR: -0.4, fWAR: -0.4, note: "短縮60試合" },
-  { season: "2021", league: "MLB", bWAR: 9.1, fWAR: 8.0, note: "AL MVP（満票）" },
+  { season: "2021", league: "MLB", bWAR: 9.1, fWAR: 8.1, note: "AL MVP（満票）" },
   { season: "2022", league: "MLB", bWAR: 9.6, fWAR: 9.5 },
   { season: "2023", league: "MLB", bWAR: 10.0, fWAR: 9.0, note: "AL MVP（満票）" },
-  { season: "2024", league: "MLB", bWAR: 9.2, fWAR: 7.6, note: "NL MVP・50-50達成" },
-  { season: "2025", league: "MLB", bWAR: 9.5, fWAR: 9.2, note: "NL MVP（二刀流復活）" },
+  { season: "2024", league: "MLB", bWAR: 9.2, fWAR: 9.1, note: "NL MVP・50-50達成（DH専念）" },
+  { season: "2025", league: "MLB", bWAR: 9.5, fWAR: 9.4, note: "NL MVP（二刀流復活・打7.5+投1.9）" },
 ];
 
 export function getRealWAR(season: string): OhtaniWAREntry | null {
