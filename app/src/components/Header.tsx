@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 
 const NAV_ITEMS = [
   { href: "/", label: "ホーム", icon: "📊" },
+  { href: "/batting", label: "打者", icon: "🏏" },
+  { href: "/pitching", label: "投手", icon: "⚾" },
   { href: "/gamelog", label: "試合", icon: "📋" },
   { href: "/stats", label: "通算", icon: "📈" },
   { href: "/rankings", label: "順位", icon: "🏆" },
