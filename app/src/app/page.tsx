@@ -149,29 +149,33 @@ export default async function DashboardPage() {
               {current.season}シーズン WAR
             </h2>
             <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-              データソース:{" "}
-              <a
-                href="https://www.fangraphs.com/leaders/war"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-dodger-blue hover:underline"
-              >
-                FanGraphs
-              </a>
-              {" / "}Baseball-Reference
+              {war.source === "history" ? (
+                <>
+                  データソース:{" "}
+                  <a
+                    href="https://www.fangraphs.com/leaders/war"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-dodger-blue hover:underline"
+                  >
+                    FanGraphs
+                  </a>
+                  {" / "}Baseball-Reference
+                </>
+              ) : (
+                <>現在の成績から算出（シーズン終了後、公式値に更新）</>
+              )}
             </p>
-            {war.source === "real" ? (
+            {war.source === "history" ? (
               <div className="grid grid-cols-2 gap-3">
                 <StatCard label="fWAR" value={war.fWAR} sub="FanGraphs" highlight />
                 <StatCard label="bWAR" value={war.bWAR} sub="Baseball-Reference" highlight />
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <StatCard label="WAR（推定）" value={war.estimate} sub="今季進行中" highlight />
-                <div className="rounded-xl border border-border bg-surface p-4 text-xs text-gray-500 dark:text-gray-400">
-                  <p className="font-bold text-gray-700 dark:text-gray-300">📊 WARについて</p>
-                  <p className="mt-1">シーズン終了後、FanGraphs / Baseball-Referenceの公式値に自動更新されます。</p>
-                </div>
+              <div className="grid grid-cols-3 gap-3">
+                <StatCard label="合計WAR" value={war.totalWAR} sub="Total" highlight />
+                <StatCard label="打撃WAR" value={war.battingWAR} sub="Batting" highlight />
+                <StatCard label="投球WAR" value={war.pitchingWAR} sub="Pitching" highlight />
               </div>
             )}
           </section>

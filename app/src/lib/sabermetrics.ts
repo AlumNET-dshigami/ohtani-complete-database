@@ -257,9 +257,9 @@ export function buildCareerWARChartData(allStats: SeasonStats[]): WARChartEntry[
       const est = estimateSeasonWAR(seasonStat.batting, seasonStat.pitching);
       return {
         season,
-        bWAR: null,
-        fWAR: null,
-        estimate: est.totalWAR,
+        bWAR: est.totalWAR,
+        fWAR: est.totalWAR,
+        estimate: null,
         league: "MLB",
       };
     }
@@ -277,8 +277,11 @@ export function buildCareerWARChartData(allStats: SeasonStats[]): WARChartEntry[
 export interface CurrentWARDisplay {
   bWAR: string;
   fWAR: string;
-  estimate: string;
-  source: "real" | "estimate";
+  battingWAR: string;
+  pitchingWAR: string;
+  totalWAR: string;
+  source: "history" | "calculated";
+  note: string;
 }
 
 export function getCurrentWARDisplay(
@@ -291,15 +294,21 @@ export function getCurrentWARDisplay(
     return {
       bWAR: real.bWAR !== null ? real.bWAR.toFixed(1) : "-",
       fWAR: real.fWAR !== null ? real.fWAR.toFixed(1) : "-",
-      estimate: "-",
-      source: "real",
+      battingWAR: "-",
+      pitchingWAR: "-",
+      totalWAR: real.fWAR !== null ? real.fWAR.toFixed(1) : "-",
+      source: "history",
+      note: real.note ?? "",
     };
   }
   const est = estimateSeasonWAR(batting, pitching);
   return {
     bWAR: "-",
     fWAR: "-",
-    estimate: est.totalWAR.toFixed(1),
-    source: "estimate",
+    battingWAR: est.battingWAR.toFixed(1),
+    pitchingWAR: est.pitchingWAR.toFixed(1),
+    totalWAR: est.totalWAR.toFixed(1),
+    source: "calculated",
+    note: "シーズン進行中（現在の成績から算出）",
   };
 }
