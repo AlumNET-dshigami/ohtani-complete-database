@@ -185,7 +185,7 @@ export default async function DashboardPage() {
                     <>
                       {" "}
                       <span className="text-amber-600 dark:text-amber-400">
-                        ({warResult.source === "cache" ? "キャッシュ値" : "手動更新値"})
+                        (手動更新値)
                       </span>
                     </>
                   ) : null}
@@ -252,7 +252,7 @@ export default async function DashboardPage() {
 
       {/* Career Charts */}
       {allStats.length > 0 && (() => {
-        const careerWAR = buildCareerWARChartData(allStats, warResult.snapshot);
+        const careerWAR = buildCareerWARChartData(allStats, warResult.snapshot, warResult.source);
         return (
           <>
             <section>

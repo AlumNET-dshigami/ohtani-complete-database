@@ -233,7 +233,8 @@ export function calcCareerWAR(allStats: SeasonStats[]): CareerWAREntry[] {
 
 export function buildCareerWARChartData(
   allStats: SeasonStats[],
-  currentSnapshot?: WARSnapshot | null
+  currentSnapshot?: WARSnapshot | null,
+  currentSource?: WARSource
 ): WARChartEntry[] {
   const seasons = new Set<string>([
     ...OHTANI_WAR_HISTORY.map((e) => e.season),
@@ -259,11 +260,25 @@ export function buildCareerWARChartData(
     }
 
     if (isCurrent && currentSnapshot) {
+      // Confirmed value only when the snapshot came from a live scrape.
+      // Manual JSON fallbacks are drawn as the dashed "estimate" line so
+      // viewers can tell at a glance that the live source is unavailable
+      // (the chart's solid bWAR/fWAR lines are reserved for confirmed values).
+      const isLive = currentSource === "live";
+      if (isLive) {
+        return {
+          season,
+          bWAR: currentSnapshot.total.rWAR,
+          fWAR: currentSnapshot.total.fWAR,
+          estimate: null,
+          league: "MLB",
+        };
+      }
       return {
         season,
-        bWAR: currentSnapshot.total.rWAR,
-        fWAR: currentSnapshot.total.fWAR,
-        estimate: null,
+        bWAR: null,
+        fWAR: null,
+        estimate: currentSnapshot.total.fWAR,
         league: "MLB",
       };
     }
@@ -272,9 +287,9 @@ export function buildCareerWARChartData(
       const est = estimateSeasonWAR(seasonStat.batting, seasonStat.pitching);
       return {
         season,
-        bWAR: est.totalWAR,
-        fWAR: est.totalWAR,
-        estimate: null,
+        bWAR: null,
+        fWAR: null,
+        estimate: est.totalWAR,
         league: "MLB",
       };
     }
@@ -316,9 +331,7 @@ export function buildScrapedWARDisplay(
   const sourceLabel =
     scrapedSource === "live"
       ? "出典: nobita-retire.com（fWAR=FanGraphs / rWAR=Baseball Reference）"
-      : scrapedSource === "cache"
-        ? "出典: nobita-retire.com（前回取得値・キャッシュ）"
-        : "出典: nobita-retire.com（手動更新値）";
+      : "出典: nobita-retire.com（手動更新値）";
 
   return {
     bWAR: fmt(snapshot.total.rWAR),

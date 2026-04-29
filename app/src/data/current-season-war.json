@@ -1,10 +1,10 @@
 {
   "year": 2026,
-  "fetchedAt": "2026-04-29T00:00:00.000Z",
+  "fetchedAt": "2026-04-29T23:15:22.972Z",
   "sourceUpdatedAt": "2026-04-29",
-  "batting": { "fWAR": 0.91, "rWAR": 0.91 },
+  "batting": { "fWAR": 0.92, "rWAR": 0.91 },
   "pitching": { "fWAR": 1.31, "rWAR": 1.29 },
   "total": { "fWAR": 2.22, "rWAR": 2.20 },
-  "extras": { "ops": ".898", "era": "0.60", "hr": null, "wins": null },
+  "extras": { "ops": ".898", "era": "0.60", "hr": null, "wins": 2 },
   "sourceUrl": "https://nobita-retire.com/2026-mlb-war/"
 }
