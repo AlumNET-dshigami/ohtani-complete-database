@@ -93,44 +93,104 @@ export async function getHotColdZones(
   }
 }
 
-interface SavantPitchRaw {
-  pitch_type?: string;
-  pitch_name?: string;
-  pitch_percent?: number;
-  pa?: number;
-  ba?: string;
-  slg?: string;
-  woba?: string;
-  avg_speed?: string;
-  avg_spin?: string;
-  pitch_count?: number;
-  total_pitches?: number;
-  pitch_type_name?: string;
-  pitch_usage_percent?: number;
-  avg_velocity?: string;
-  batting_avg?: string;
+/**
+ * Parse a single CSV line, respecting double-quoted fields that may contain commas.
+ * Baseball Savant's leaderboard CSV wraps strings (including names like "Ohtani, Shohei") in quotes.
+ */
+function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes) {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out;
 }
 
+/**
+ * Fetch Shohei Ohtani's pitch arsenal for the given season from the public
+ * Baseball Savant leaderboard CSV export.
+ *
+ * Endpoint: /leaderboard/pitch-arsenal-stats?type=pitcher&year=YYYY&min=0&csv=true
+ *
+ * The legacy `/player-services/statcast-pitching-arsenal` endpoint that this
+ * function previously hit returns 404 — it no longer exists (or never did in
+ * its assumed form). The leaderboard CSV is what the public Savant pages
+ * actually consume, so we fetch and filter to player_id 660271.
+ *
+ * Caveats:
+ * - Early-season pitches with very low counts may be filtered out by Savant's
+ *   internal threshold even with min=0, so list may be partial in March/April.
+ * - The CSV does not include average velocity, so `avgSpeed` is "-".
+ */
 export async function getPitchArsenal(season: number): Promise<PitchTypeEntry[]> {
   try {
-    const url = `${SAVANT_BASE}/player-services/statcast-pitching-arsenal?playerId=${OHTANI_PLAYER_ID}&position=P&season=${season}&team=`;
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    const url = `${SAVANT_BASE}/leaderboard/pitch-arsenal-stats?type=pitcher&year=${season}&min=0&csv=true`;
+    const res = await fetch(url, {
+      next: { revalidate: 3600 },
+      headers: {
+        // Identify ourselves to be a good API citizen.
+        "User-Agent": "ohtani-complete-database/1.0 (+https://github.com/AlumNET-dshigami/ohtani-complete-database)",
+        Accept: "text/csv,*/*",
+      },
+    });
     if (!res.ok) return [];
-    const data: SavantPitchRaw[] = await res.json();
-    if (!Array.isArray(data)) return [];
+    const text = await res.text();
+    if (!text || text.length < 10) return [];
 
-    return data
-      .filter((d) => (d.pitch_percent ?? d.pitch_usage_percent ?? 0) > 0)
-      .map((d) => ({
-        pitchType: d.pitch_type ?? "",
-        pitchName: d.pitch_name ?? d.pitch_type_name ?? d.pitch_type ?? "",
-        percentage: d.pitch_percent ?? d.pitch_usage_percent ?? 0,
-        count: d.pitch_count ?? d.pa ?? d.total_pitches ?? 0,
-        avgSpeed: d.avg_speed ?? d.avg_velocity ?? "-",
-        ba: d.ba ?? d.batting_avg ?? "-",
-        slg: d.slg ?? "-",
-        woba: d.woba ?? "-",
+    const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
+    if (lines.length < 2) return [];
+
+    const header = parseCsvLine(lines[0]).map((h) => h.trim().replace(/^"|"$/g, ""));
+    const idx = (name: string) => header.indexOf(name);
+
+    const iPlayerId = idx("player_id");
+    const iPitchType = idx("pitch_type");
+    const iPitchName = idx("pitch_name");
+    const iUsage = idx("pitch_usage");
+    const iPitches = idx("pitches");
+    const iPa = idx("pa");
+    const iBa = idx("ba");
+    const iSlg = idx("slg");
+    const iWoba = idx("woba");
+
+    if (iPlayerId === -1 || iPitchType === -1 || iUsage === -1) return [];
+
+    const rows = lines.slice(1).map(parseCsvLine);
+    const ohtaniRows = rows.filter((r) => r[iPlayerId]?.replace(/"/g, "") === String(OHTANI_PLAYER_ID));
+
+    const stripQuotes = (v: string | undefined) => (v ?? "").replace(/^"|"$/g, "");
+    const toNum = (v: string | undefined): number => {
+      const n = parseFloat(stripQuotes(v));
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    return ohtaniRows
+      .map((r) => ({
+        pitchType: stripQuotes(r[iPitchType]),
+        pitchName: stripQuotes(r[iPitchName]),
+        percentage: toNum(r[iUsage]),
+        count: toNum(iPitches !== -1 ? r[iPitches] : r[iPa]),
+        avgSpeed: "-",
+        ba: stripQuotes(r[iBa]) || "-",
+        slg: stripQuotes(r[iSlg]) || "-",
+        woba: stripQuotes(r[iWoba]) || "-",
       }))
+      .filter((d) => d.percentage > 0)
       .sort((a, b) => b.percentage - a.percentage);
   } catch {
     return [];

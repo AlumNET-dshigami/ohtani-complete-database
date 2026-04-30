@@ -39,10 +39,10 @@ export default function PitchArsenal({ data }: PitchArsenalProps) {
           球種構成
         </h3>
         <div className="flex items-center justify-center py-12 text-sm text-gray-400">
-          球種データを取得できませんでした
+          球種データはまだ集計されていません
         </div>
         <p className="mt-2 text-center text-[10px] text-gray-400">
-          ※ シーズン開始後、Baseball Savantから自動取得されます
+          ※ Baseball Savantのリーダーボード集計後に表示されます（通常シーズン開幕後数試合）
         </p>
       </div>
     );
