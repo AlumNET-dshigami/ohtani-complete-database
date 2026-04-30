@@ -68,8 +68,10 @@ function parseInteger(value: string | undefined): number | null {
 
 /**
  * Parse "※2026年4月29日更新" or "2026年4月29日" style text into "YYYY-MM-DD".
+ * Exported for unit testing; production callers should use parseWARHtml.
  */
-function parseUpdatedDate(text: string): string | null {
+export function parseUpdatedDate(text: string): string | null {
+  if (!text) return null;
   const m = text.match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/);
   if (!m) return null;
   const [, y, mo, d] = m;
