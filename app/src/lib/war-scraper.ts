@@ -27,7 +27,26 @@ export interface WARSnapshot {
 const USER_AGENT =
   "OhtaniCompleteDatabase/1.0 (+https://ohtani-complete-database.vercel.app; respect-robots)";
 
-const FETCH_TIMEOUT_MS = 15_000;
+// Vercel's Hobby plan caps serverless function execution at 10s, so the
+// previous hard-coded 15s timeout could never actually fire — the platform
+// would kill the request first. Default to 8s (safely inside the 10s
+// budget, leaves ~2s for parsing + render) and allow override via env for
+// Pro plans / local dev that have longer budgets. Clamped to a sane range
+// so a stray "WAR_FETCH_TIMEOUT_MS=foo" or "WAR_FETCH_TIMEOUT_MS=999999"
+// can't silently break fetches.
+const DEFAULT_FETCH_TIMEOUT_MS = 8_000;
+const MIN_FETCH_TIMEOUT_MS = 1_000;
+const MAX_FETCH_TIMEOUT_MS = 30_000;
+
+function resolveFetchTimeoutMs(): number {
+  const raw = process.env.WAR_FETCH_TIMEOUT_MS;
+  if (raw === undefined || raw === "") return DEFAULT_FETCH_TIMEOUT_MS;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_FETCH_TIMEOUT_MS;
+  return Math.min(MAX_FETCH_TIMEOUT_MS, Math.max(MIN_FETCH_TIMEOUT_MS, parsed));
+}
+
+const FETCH_TIMEOUT_MS = resolveFetchTimeoutMs();
 
 function buildSourceUrl(year: number): string {
   return `https://nobita-retire.com/${year}-mlb-war/`;
@@ -49,8 +68,10 @@ function parseInteger(value: string | undefined): number | null {
 
 /**
  * Parse "※2026年4月29日更新" or "2026年4月29日" style text into "YYYY-MM-DD".
+ * Exported for unit testing; production callers should use parseWARHtml.
  */
-function parseUpdatedDate(text: string): string | null {
+export function parseUpdatedDate(text: string): string | null {
+  if (!text) return null;
   const m = text.match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/);
   if (!m) return null;
   const [, y, mo, d] = m;

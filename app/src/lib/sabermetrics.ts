@@ -316,12 +316,10 @@ export interface CurrentWARDisplay {
   note: string;
 }
 
+// WAR display is normalised to 1 decimal place across all callers to match
+// FanGraphs / Baseball Reference public formatting (e.g. "2.2", not "2.20").
 function fmt(n: number | null): string {
   return n !== null ? n.toFixed(1) : "-";
-}
-
-function fmt2(n: number | null): string {
-  return n !== null ? n.toFixed(2) : "-";
 }
 
 export function buildScrapedWARDisplay(
@@ -336,9 +334,9 @@ export function buildScrapedWARDisplay(
   return {
     bWAR: fmt(snapshot.total.rWAR),
     fWAR: fmt(snapshot.total.fWAR),
-    battingWAR: fmt2(snapshot.batting.fWAR),
-    pitchingWAR: fmt2(snapshot.pitching.fWAR),
-    totalWAR: fmt2(snapshot.total.fWAR),
+    battingWAR: fmt(snapshot.batting.fWAR),
+    pitchingWAR: fmt(snapshot.pitching.fWAR),
+    totalWAR: fmt(snapshot.total.fWAR),
     source: "scraped",
     scrapedSource,
     sourceUpdatedAt: snapshot.sourceUpdatedAt,
