@@ -184,7 +184,12 @@ export default async function DashboardPage() {
                   {warResult.source !== "live" ? (
                     <>
                       {" "}
-                      <span className="text-amber-600 dark:text-amber-400">
+                      <span
+                        role="status"
+                        aria-label="手動更新値（ライブ取得に失敗）"
+                        className="text-amber-600 dark:text-amber-400"
+                      >
+                        <span aria-hidden="true">⚠️ </span>
                         (手動更新値)
                       </span>
                     </>
