@@ -1,5 +1,6 @@
 import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, getGameLogBatting, getGameLogPitching, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
-import { calcAdvancedBatting, calcAdvancedPitching, getCurrentWARDisplay, buildCareerWARChartData } from "@/lib/sabermetrics";
+import { calcAdvancedBatting, calcAdvancedPitching, getCurrentWARDisplay, buildCareerWARChartData, buildScrapedWARDisplay } from "@/lib/sabermetrics";
+import { getCurrentSeasonWAR } from "@/lib/war-source";
 import StatCard from "@/components/StatCard";
 import HrChart from "@/components/HrChart";
 import PitchingChart from "@/components/PitchingChart";
@@ -16,12 +17,13 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const currentYear = new Date().getFullYear();
-  const [player, current, allStats, battingLog, pitchingLog] = await Promise.all([
+  const [player, current, allStats, battingLog, pitchingLog, warResult] = await Promise.all([
     getPlayerInfo(),
     getCurrentSeasonStats(),
     getYearByYearStats(),
     getGameLogBatting(currentYear, "R"),
     getGameLogPitching(currentYear, "R"),
+    getCurrentSeasonWAR(currentYear),
   ]);
 
   return (
@@ -142,7 +144,11 @@ export default async function DashboardPage() {
 
       {/* WAR Display */}
       {current && (() => {
-        const war = getCurrentWARDisplay(current.season, current.batting, current.pitching);
+        const isCurrentYear = current.season === String(currentYear);
+        const war = isCurrentYear
+          ? buildScrapedWARDisplay(warResult.snapshot, warResult.source)
+          : getCurrentWARDisplay(current.season, current.batting, current.pitching);
+
         return (
           <section>
             <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
@@ -162,6 +168,28 @@ export default async function DashboardPage() {
                   </a>
                   {" / "}Baseball-Reference
                 </>
+              ) : war.source === "scraped" ? (
+                <>
+                  出典:{" "}
+                  <a
+                    href={warResult.snapshot.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-dodger-blue hover:underline"
+                  >
+                    nobita-retire.com
+                  </a>
+                  {"（fWAR=FanGraphs / rWAR=Baseball Reference）"}
+                  {war.sourceUpdatedAt ? <> / 最終更新: {war.sourceUpdatedAt}</> : null}
+                  {warResult.source !== "live" ? (
+                    <>
+                      {" "}
+                      <span className="text-amber-600 dark:text-amber-400">
+                        (手動更新値)
+                      </span>
+                    </>
+                  ) : null}
+                </>
               ) : (
                 <>現在の成績から算出（シーズン終了後、公式値に更新）</>
               )}
@@ -170,6 +198,13 @@ export default async function DashboardPage() {
               <div className="grid grid-cols-2 gap-3">
                 <StatCard label="fWAR" value={war.fWAR} sub="FanGraphs" highlight />
                 <StatCard label="bWAR" value={war.bWAR} sub="Baseball-Reference" highlight />
+              </div>
+            ) : war.source === "scraped" ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatCard label="合計fWAR" value={war.fWAR} sub="FanGraphs" highlight />
+                <StatCard label="合計rWAR" value={war.bWAR} sub="Baseball Ref." highlight />
+                <StatCard label="打撃fWAR" value={war.battingWAR} sub="Batting" />
+                <StatCard label="投球fWAR" value={war.pitchingWAR} sub="Pitching" />
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-3">
@@ -217,7 +252,7 @@ export default async function DashboardPage() {
 
       {/* Career Charts */}
       {allStats.length > 0 && (() => {
-        const careerWAR = buildCareerWARChartData(allStats);
+        const careerWAR = buildCareerWARChartData(allStats, warResult.snapshot, warResult.source);
         return (
           <>
             <section>

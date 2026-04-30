@@ -1,5 +1,7 @@
 import type { BattingStats, PitchingStats, SeasonStats, WARChartEntry } from "./types";
 import { OHTANI_WAR_HISTORY, getRealWAR } from "./ohtani-war-data";
+import type { WARSnapshot } from "./war-scraper";
+import type { WARSource } from "./war-source";
 
 // ---- Batting Advanced Stats ----
 
@@ -229,7 +231,11 @@ export function calcCareerWAR(allStats: SeasonStats[]): CareerWAREntry[] {
 
 // ---- Combined WAR (real history + current-season estimate) ----
 
-export function buildCareerWARChartData(allStats: SeasonStats[]): WARChartEntry[] {
+export function buildCareerWARChartData(
+  allStats: SeasonStats[],
+  currentSnapshot?: WARSnapshot | null,
+  currentSource?: WARSource
+): WARChartEntry[] {
   const seasons = new Set<string>([
     ...OHTANI_WAR_HISTORY.map((e) => e.season),
     ...allStats.map((s) => s.season),
@@ -242,7 +248,7 @@ export function buildCareerWARChartData(allStats: SeasonStats[]): WARChartEntry[
     const currentYear = String(new Date().getFullYear());
     const isCurrent = season === currentYear;
 
-    // Use real values if available; estimate for current in-progress season only
+    // Use real values if available; scraped snapshot for current in-progress season; legacy estimate as last resort.
     if (real) {
       return {
         season,
@@ -253,13 +259,37 @@ export function buildCareerWARChartData(allStats: SeasonStats[]): WARChartEntry[
       };
     }
 
+    if (isCurrent && currentSnapshot) {
+      // Confirmed value only when the snapshot came from a live scrape.
+      // Manual JSON fallbacks are drawn as the dashed "estimate" line so
+      // viewers can tell at a glance that the live source is unavailable
+      // (the chart's solid bWAR/fWAR lines are reserved for confirmed values).
+      const isLive = currentSource === "live";
+      if (isLive) {
+        return {
+          season,
+          bWAR: currentSnapshot.total.rWAR,
+          fWAR: currentSnapshot.total.fWAR,
+          estimate: null,
+          league: "MLB",
+        };
+      }
+      return {
+        season,
+        bWAR: null,
+        fWAR: null,
+        estimate: currentSnapshot.total.fWAR,
+        league: "MLB",
+      };
+    }
+
     if (isCurrent && seasonStat) {
       const est = estimateSeasonWAR(seasonStat.batting, seasonStat.pitching);
       return {
         season,
-        bWAR: est.totalWAR,
-        fWAR: est.totalWAR,
-        estimate: null,
+        bWAR: null,
+        fWAR: null,
+        estimate: est.totalWAR,
         league: "MLB",
       };
     }
@@ -280,8 +310,40 @@ export interface CurrentWARDisplay {
   battingWAR: string;
   pitchingWAR: string;
   totalWAR: string;
-  source: "history" | "calculated";
+  source: "history" | "scraped" | "calculated";
+  scrapedSource?: WARSource;
+  sourceUpdatedAt?: string | null;
   note: string;
+}
+
+function fmt(n: number | null): string {
+  return n !== null ? n.toFixed(1) : "-";
+}
+
+function fmt2(n: number | null): string {
+  return n !== null ? n.toFixed(2) : "-";
+}
+
+export function buildScrapedWARDisplay(
+  snapshot: WARSnapshot,
+  scrapedSource: WARSource
+): CurrentWARDisplay {
+  const sourceLabel =
+    scrapedSource === "live"
+      ? "出典: nobita-retire.com（fWAR=FanGraphs / rWAR=Baseball Reference）"
+      : "出典: nobita-retire.com（手動更新値）";
+
+  return {
+    bWAR: fmt(snapshot.total.rWAR),
+    fWAR: fmt(snapshot.total.fWAR),
+    battingWAR: fmt2(snapshot.batting.fWAR),
+    pitchingWAR: fmt2(snapshot.pitching.fWAR),
+    totalWAR: fmt2(snapshot.total.fWAR),
+    source: "scraped",
+    scrapedSource,
+    sourceUpdatedAt: snapshot.sourceUpdatedAt,
+    note: sourceLabel,
+  };
 }
 
 export function getCurrentWARDisplay(
