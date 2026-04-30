@@ -1,4 +1,9 @@
 import { fetchWARFromNobitaRetire, type WARSnapshot } from "./war-scraper";
+// Manual fallback snapshot. Editing convention for current-season-war.json:
+// always write WAR numbers with 2 decimal places (e.g. 0.91, 1.31, 2.20),
+// even when the trailing digit is zero. JSON itself treats 2.2 and 2.20 as
+// the same value, but humans diff this file by eye, and a consistent width
+// makes copy/paste from nobita-retire.com less error-prone.
 import manualSnapshot from "@/data/current-season-war.json";
 
 export type WARSource = "live" | "manual";
