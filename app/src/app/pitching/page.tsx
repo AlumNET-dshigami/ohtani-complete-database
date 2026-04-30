@@ -22,8 +22,8 @@ export default async function PitchingPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-      <section className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-red-600 via-red-500 to-red-700 p-6 text-white shadow-lg">
+      {/* Page Header — unified with /batting (dodger-blue gradient) */}
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-dodger-blue via-dodger-blue to-dodger-blue-dark p-6 text-white shadow-lg">
         <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-white/5 to-transparent" />
         <div className="relative flex items-center gap-4">
           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border-3 border-white/30 bg-white/10">
