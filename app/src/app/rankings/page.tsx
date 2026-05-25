@@ -1,5 +1,6 @@
-import { getBattingLeaders, getPitchingLeaders } from "@/lib/rankings-api";
-import type { LeaderCategory } from "@/lib/rankings-api";
+import { getBattingLeaders, getPitchingLeaders, getTitleRaces } from "@/lib/rankings-api";
+import type { LeaderCategory, LeagueScope, TitleRace } from "@/lib/rankings-api";
+import TitleRaceDashboard from "@/components/TitleRaceDashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -103,19 +104,49 @@ function LeaderBoard({ category }: { category: LeaderCategory }) {
 
 export default async function RankingsPage() {
   const currentYear = new Date().getFullYear();
-  const [battingLeaders, pitchingLeaders] = await Promise.all([
+  const [battingLeaders, pitchingLeaders, nlRaces, alRaces, mlbRaces] = await Promise.all([
     getBattingLeaders(currentYear),
     getPitchingLeaders(currentYear),
+    getTitleRaces(currentYear, "NL"),
+    getTitleRaces(currentYear, "AL"),
+    getTitleRaces(currentYear, "MLB"),
   ]);
 
+  const byScope: Record<LeagueScope, TitleRace[]> = {
+    NL: nlRaces,
+    AL: alRaces,
+    MLB: mlbRaces,
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <section>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           {currentYear}シーズン MLBランキング
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          各指標のリーグ上位10選手を表示（大谷翔平はハイライト表示）
+          大谷翔平のタイトル争いと各指標ランキング
+        </p>
+      </section>
+
+      {/* 機能A: タイトル争いダッシュボード */}
+      <section>
+        <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+          🏆 タイトル争い
+        </h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          大谷の所属するナ・リーグを基準に「タイトルまであと何本／何厘」を表示
+        </p>
+        <TitleRaceDashboard byScope={byScope} season={currentYear} />
+      </section>
+
+      {/* 従来の指標別リーダーボード（補助） */}
+      <section>
+        <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+          指標別リーダーボード
+        </h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          各指標のMLB上位選手（大谷翔平はハイライト表示）
         </p>
       </section>
 
