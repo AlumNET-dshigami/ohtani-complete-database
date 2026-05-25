@@ -320,3 +320,162 @@ export function parseWARHtml(html: string, year: number, url: string): WARSnapsh
     sourceUrl: url,
   };
 }
+
+// ============================================================================
+// 機能C: WARランキング（TOP20 + 大谷の二刀流内訳）
+// ----------------------------------------------------------------------------
+// nobita-retire の「野手＋投手」合算テーブル（各20行=TOP20）からランキングを取得。
+// 実データ検証で確認: table heading が「MLB全体（野手＋投手）」「ナ・リーグ（野手＋
+// 投手）」で、列は 順位|Name|Team|fWAR|rWAR|平均WAR|OPS|ERA。
+// ============================================================================
+
+export type WARScope = "MLB" | "NL" | "AL";
+export type WARMetric = "fWAR" | "rWAR";
+
+export interface WARRankEntry {
+  rank: number;
+  name: string;
+  team: string;
+  fWAR: number | null;
+  rWAR: number | null;
+  isOhtani: boolean;
+}
+
+export interface WARRankingResult {
+  scope: WARScope;
+  entries: WARRankEntry[];
+  /** 大谷の順位（ランキング内に居れば） */
+  ohtaniRank: number | null;
+  ohtaniEntry: WARRankEntry | null;
+  sourceUrl: string;
+  sourceUpdatedAt: string | null;
+  fetchedAt: string;
+}
+
+const SCOPE_KEYWORDS: Record<WARScope, string[]> = {
+  MLB: ["MLB全体"],
+  NL: ["ナ・リーグ", "ナリーグ"],
+  AL: ["ア・リーグ", "アリーグ"],
+};
+
+function isOhtaniName(name: string): boolean {
+  return name.includes("大谷");
+}
+
+/** 「野手＋投手」合算テーブルか（ヘッダにOPSとERAの両方を含むのが合算表の特徴） */
+function isCombinedTable(t: TableSnapshot): boolean {
+  const h = t.headerCells.join("|");
+  return /OPS/i.test(h) && /ERA/i.test(h) && /fWAR/i.test(h);
+}
+
+/**
+ * 指定スコープの「野手＋投手」合算 WAR ランキング（TOP20）を抽出。
+ */
+export function parseWARRankingHtml(
+  html: string,
+  scope: WARScope,
+  url: string
+): WARRankingResult {
+  const $ = cheerio.load(html);
+  const tables = collectTables($);
+  const fetchedAt = new Date().toISOString();
+  const sourceUpdatedAt = parseUpdatedDate($("body").text());
+
+  // スコープ一致 ＆ 合算テーブルを探す。「野手＋投手」見出しを優先。
+  const keywords = SCOPE_KEYWORDS[scope];
+  const candidates = tables.filter(
+    (t) => isCombinedTable(t) && keywords.some((kw) => t.heading.includes(kw))
+  );
+  // 「野手＋投手」を明示的に含むものを最優先
+  const combined =
+    candidates.find((t) => /野手.?＋?.?投手|野手\+投手/.test(t.heading)) ??
+    candidates[0] ??
+    null;
+
+  const empty: WARRankingResult = {
+    scope,
+    entries: [],
+    ohtaniRank: null,
+    ohtaniEntry: null,
+    sourceUrl: url,
+    sourceUpdatedAt,
+    fetchedAt,
+  };
+  if (!combined) return empty;
+
+  const H = combined.headerCells;
+  const idxOf = (re: RegExp) => H.findIndex((h) => re.test(h));
+  const iName = idxOf(/Name|名前|選手/i);
+  const iTeam = idxOf(/Team|チーム/i);
+  const iF = idxOf(/fWAR/i);
+  const iR = idxOf(/rWAR/i);
+
+  if (iName === -1 || (iF === -1 && iR === -1)) return empty;
+
+  const entries: WARRankEntry[] = combined.rows
+    .map((row, i) => {
+      const cells = row.cells;
+      const name = (cells[iName] ?? "").trim();
+      if (!name) return null;
+      return {
+        rank: i + 1,
+        name,
+        team: iTeam >= 0 ? (cells[iTeam] ?? "").trim() : "",
+        fWAR: iF >= 0 ? parseNumber(cells[iF]) : null,
+        rWAR: iR >= 0 ? parseNumber(cells[iR]) : null,
+        isOhtani: isOhtaniName(name),
+      } as WARRankEntry;
+    })
+    .filter((e): e is WARRankEntry => e !== null);
+
+  const ohtaniIdx = entries.findIndex((e) => e.isOhtani);
+  const ohtaniEntry = ohtaniIdx >= 0 ? entries[ohtaniIdx] : null;
+
+  return {
+    scope,
+    entries,
+    ohtaniRank: ohtaniEntry?.rank ?? null,
+    ohtaniEntry,
+    sourceUrl: url,
+    sourceUpdatedAt,
+    fetchedAt,
+  };
+}
+
+/**
+ * TOP20 WAR ランキングをライブ取得（失敗時は entries 空で返る＝graceful degrade）。
+ */
+export async function fetchWARRanking(
+  year: number,
+  scope: WARScope
+): Promise<WARRankingResult> {
+  const url = buildSourceUrl(year);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "ja,en;q=0.8",
+      },
+      signal: controller.signal,
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const html = await res.text();
+    return parseWARRankingHtml(html, scope, url);
+  } catch {
+    return {
+      scope,
+      entries: [],
+      ohtaniRank: null,
+      ohtaniEntry: null,
+      sourceUrl: url,
+      sourceUpdatedAt: null,
+      fetchedAt: new Date().toISOString(),
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}

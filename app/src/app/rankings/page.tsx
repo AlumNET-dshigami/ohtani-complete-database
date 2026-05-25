@@ -1,5 +1,9 @@
-import { getBattingLeaders, getPitchingLeaders } from "@/lib/rankings-api";
-import type { LeaderCategory } from "@/lib/rankings-api";
+import { getBattingLeaders, getPitchingLeaders, getTitleRaces } from "@/lib/rankings-api";
+import type { LeaderCategory, LeagueScope, TitleRace } from "@/lib/rankings-api";
+import { fetchWARRanking, type WARRankingResult, type WARScope } from "@/lib/war-scraper";
+import { getCurrentSeasonWAR } from "@/lib/war-source";
+import TitleRaceDashboard from "@/components/TitleRaceDashboard";
+import WARRankingDashboard from "@/components/WARRankingDashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -103,19 +107,97 @@ function LeaderBoard({ category }: { category: LeaderCategory }) {
 
 export default async function RankingsPage() {
   const currentYear = new Date().getFullYear();
-  const [battingLeaders, pitchingLeaders] = await Promise.all([
+  const [
+    battingLeaders,
+    pitchingLeaders,
+    nlRaces,
+    alRaces,
+    mlbRaces,
+    warMlb,
+    warNl,
+    warAl,
+    warResult,
+  ] = await Promise.all([
     getBattingLeaders(currentYear),
     getPitchingLeaders(currentYear),
+    getTitleRaces(currentYear, "NL"),
+    getTitleRaces(currentYear, "AL"),
+    getTitleRaces(currentYear, "MLB"),
+    fetchWARRanking(currentYear, "MLB"),
+    fetchWARRanking(currentYear, "NL"),
+    fetchWARRanking(currentYear, "AL"),
+    getCurrentSeasonWAR(currentYear),
   ]);
 
+  const byScope: Record<LeagueScope, TitleRace[]> = {
+    NL: nlRaces,
+    AL: alRaces,
+    MLB: mlbRaces,
+  };
+
+  const warByScope: Partial<Record<WARScope, WARRankingResult>> = {
+    MLB: warMlb,
+    NL: warNl,
+    AL: warAl,
+  };
+
+  const warSnap = warResult.snapshot;
+  const warBreakdown = {
+    battingFWar: warSnap.batting.fWAR,
+    pitchingFWar: warSnap.pitching.fWAR,
+    battingRWar: warSnap.batting.rWAR,
+    pitchingRWar: warSnap.pitching.rWAR,
+    totalFWar: warSnap.total.fWAR,
+    totalRWar: warSnap.total.rWAR,
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <section>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           {currentYear}シーズン MLBランキング
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          各指標のリーグ上位10選手を表示（大谷翔平はハイライト表示）
+          大谷翔平のタイトル争いと各指標ランキング
+        </p>
+      </section>
+
+      {/* 機能A: タイトル争いダッシュボード */}
+      <section>
+        <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+          🏆 タイトル争い
+        </h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          大谷の所属するナ・リーグを基準に「タイトルまであと何本／何厘」を表示
+        </p>
+        <TitleRaceDashboard byScope={byScope} season={currentYear} />
+      </section>
+
+      {/* 機能C: WARランキング */}
+      <section>
+        <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+          📊 WARランキング
+        </h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          二刀流の合算WARと内訳、リーグ/MLB全体のTOP20（大谷翔平を強調）
+        </p>
+        <WARRankingDashboard
+          byScope={warByScope}
+          breakdown={warBreakdown}
+          season={currentYear}
+          isManual={warResult.source !== "live"}
+          sourceUrl={warSnap.sourceUrl}
+          sourceUpdatedAt={warSnap.sourceUpdatedAt}
+        />
+      </section>
+
+      {/* 従来の指標別リーダーボード（補助） */}
+      <section>
+        <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+          指標別リーダーボード
+        </h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          各指標のMLB上位選手（大谷翔平はハイライト表示）
         </p>
       </section>
 

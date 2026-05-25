@@ -1,20 +1,22 @@
+import Link from "next/link";
 import { getCurrentSeasonStats, getGameLogPitching, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import { calcAdvancedPitching } from "@/lib/sabermetrics";
-import { getHotColdZones, getPitchArsenal } from "@/lib/statcast-api";
+import { getHotColdZones, getPitchArsenalDetail } from "@/lib/statcast-api";
 import StatCard from "@/components/StatCard";
 import ZoneHeatMap from "@/components/ZoneHeatMap";
-import PitchArsenal from "@/components/PitchArsenal";
+import PitchDeepDive from "@/components/PitchDeepDive";
 import PitchingProgressChart from "@/components/PitchingProgressChart";
 
 export const dynamic = "force-dynamic";
 
 export default async function PitchingPage() {
   const currentYear = new Date().getFullYear();
-  const [current, pitchingLog, zones, arsenal] = await Promise.all([
+  const [current, pitchingLog, zones, arsenalBatter, arsenalPitcher] = await Promise.all([
     getCurrentSeasonStats(),
     getGameLogPitching(currentYear, "R"),
     getHotColdZones(currentYear, "pitching"),
-    getPitchArsenal(currentYear),
+    getPitchArsenalDetail(currentYear, "batter"),
+    getPitchArsenalDetail(currentYear, "pitcher"),
   ]);
 
   const pitching = current?.pitching;
@@ -58,12 +60,25 @@ export default async function PitchingPage() {
         </section>
       )}
 
-      {/* Pitch Arsenal */}
+      {/* Pitch Arsenal — 機能B 球種の深掘り（投手ロール初期表示） */}
       <section>
-        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
-          球種分析
-        </h2>
-        <PitchArsenal data={arsenal} />
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            球種の深掘り
+          </h2>
+          <Link
+            href="/pitch-arsenal?role=pitcher"
+            className="text-xs font-semibold text-dodger-blue hover:underline"
+          >
+            専用ページで見る →
+          </Link>
+        </div>
+        <PitchDeepDive
+          batter={arsenalBatter}
+          pitcher={arsenalPitcher}
+          season={currentYear}
+          initialRole="pitcher"
+        />
       </section>
 
       {/* Pitching Zone Heat Map */}
