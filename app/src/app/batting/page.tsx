@@ -1,19 +1,23 @@
+import Link from "next/link";
 import { getCurrentSeasonStats, getGameLogBatting, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import { calcAdvancedBatting } from "@/lib/sabermetrics";
-import { getHotColdZones, getStatcastBatting } from "@/lib/statcast-api";
+import { getHotColdZones, getStatcastBatting, getPitchArsenalDetail } from "@/lib/statcast-api";
 import StatCard from "@/components/StatCard";
 import ZoneHeatMap from "@/components/ZoneHeatMap";
 import SeasonProgressChart from "@/components/SeasonProgressChart";
+import PitchDeepDive from "@/components/PitchDeepDive";
 
 export const dynamic = "force-dynamic";
 
 export default async function BattingPage() {
   const currentYear = new Date().getFullYear();
-  const [current, battingLog, zones, statcast] = await Promise.all([
+  const [current, battingLog, zones, statcast, arsenalBatter, arsenalPitcher] = await Promise.all([
     getCurrentSeasonStats(),
     getGameLogBatting(currentYear, "R"),
     getHotColdZones(currentYear, "hitting"),
     getStatcastBatting(currentYear),
+    getPitchArsenalDetail(currentYear, "batter"),
+    getPitchArsenalDetail(currentYear, "pitcher"),
   ]);
 
   const batting = current?.batting;
@@ -97,6 +101,27 @@ export default async function BattingPage() {
           </p>
         </section>
       )}
+
+      {/* 機能B 球種の深掘り（打者ロール初期表示） */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            球種の深掘り
+          </h2>
+          <Link
+            href="/pitch-arsenal?role=batter"
+            className="text-xs font-semibold text-dodger-blue hover:underline"
+          >
+            専用ページで見る →
+          </Link>
+        </div>
+        <PitchDeepDive
+          batter={arsenalBatter}
+          pitcher={arsenalPitcher}
+          season={currentYear}
+          initialRole="batter"
+        />
+      </section>
 
       {/* Hot/Cold Zone Heat Map */}
       <section>

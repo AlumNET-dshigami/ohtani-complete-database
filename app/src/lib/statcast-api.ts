@@ -14,17 +14,6 @@ export interface HotColdZoneCategory {
   zones: ZoneData[];
 }
 
-export interface PitchTypeEntry {
-  pitchType: string;
-  pitchName: string;
-  percentage: number;
-  count: number;
-  avgSpeed: string;
-  ba: string;
-  slg: string;
-  woba: string;
-}
-
 export interface StatcastBatting {
   avgExitVelocity: number | null;
   maxExitVelocity: number | null;
@@ -121,82 +110,6 @@ function parseCsvLine(line: string): string[] {
   return out;
 }
 
-/**
- * Fetch Shohei Ohtani's pitch arsenal for the given season from the public
- * Baseball Savant leaderboard CSV export.
- *
- * Endpoint: /leaderboard/pitch-arsenal-stats?type=pitcher&year=YYYY&min=0&csv=true
- *
- * The legacy `/player-services/statcast-pitching-arsenal` endpoint that this
- * function previously hit returns 404 — it no longer exists (or never did in
- * its assumed form). The leaderboard CSV is what the public Savant pages
- * actually consume, so we fetch and filter to player_id 660271.
- *
- * Caveats:
- * - Early-season pitches with very low counts may be filtered out by Savant's
- *   internal threshold even with min=0, so list may be partial in March/April.
- * - The CSV does not include average velocity, so `avgSpeed` is "-".
- */
-export async function getPitchArsenal(season: number): Promise<PitchTypeEntry[]> {
-  try {
-    const url = `${SAVANT_BASE}/leaderboard/pitch-arsenal-stats?type=pitcher&year=${season}&min=0&csv=true`;
-    const res = await fetch(url, {
-      next: { revalidate: 3600 },
-      headers: {
-        // Identify ourselves to be a good API citizen.
-        "User-Agent": "ohtani-complete-database/1.0 (+https://github.com/AlumNET-dshigami/ohtani-complete-database)",
-        Accept: "text/csv,*/*",
-      },
-    });
-    if (!res.ok) return [];
-    const text = await res.text();
-    if (!text || text.length < 10) return [];
-
-    const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
-    if (lines.length < 2) return [];
-
-    const header = parseCsvLine(lines[0]).map((h) => h.trim().replace(/^"|"$/g, ""));
-    const idx = (name: string) => header.indexOf(name);
-
-    const iPlayerId = idx("player_id");
-    const iPitchType = idx("pitch_type");
-    const iPitchName = idx("pitch_name");
-    const iUsage = idx("pitch_usage");
-    const iPitches = idx("pitches");
-    const iPa = idx("pa");
-    const iBa = idx("ba");
-    const iSlg = idx("slg");
-    const iWoba = idx("woba");
-
-    if (iPlayerId === -1 || iPitchType === -1 || iUsage === -1) return [];
-
-    const rows = lines.slice(1).map(parseCsvLine);
-    const ohtaniRows = rows.filter((r) => r[iPlayerId]?.replace(/"/g, "") === String(OHTANI_PLAYER_ID));
-
-    const stripQuotes = (v: string | undefined) => (v ?? "").replace(/^"|"$/g, "");
-    const toNum = (v: string | undefined): number => {
-      const n = parseFloat(stripQuotes(v));
-      return Number.isFinite(n) ? n : 0;
-    };
-
-    return ohtaniRows
-      .map((r) => ({
-        pitchType: stripQuotes(r[iPitchType]),
-        pitchName: stripQuotes(r[iPitchName]),
-        percentage: toNum(r[iUsage]),
-        count: toNum(iPitches !== -1 ? r[iPitches] : r[iPa]),
-        avgSpeed: "-",
-        ba: stripQuotes(r[iBa]) || "-",
-        slg: stripQuotes(r[iSlg]) || "-",
-        woba: stripQuotes(r[iWoba]) || "-",
-      }))
-      .filter((d) => d.percentage > 0)
-      .sort((a, b) => b.percentage - a.percentage);
-  } catch {
-    return [];
-  }
-}
-
 export async function getStatcastBatting(season: number): Promise<StatcastBatting | null> {
   try {
     const url = `${SAVANT_BASE}/player-services/statcast-stats?playerId=${OHTANI_PLAYER_ID}&position=B&season=${season}`;
@@ -222,6 +135,174 @@ export async function getStatcastBatting(season: number): Promise<StatcastBattin
     };
   } catch {
     return null;
+  }
+}
+
+// ============================================================================
+// 機能B: 球種の深掘り（打者/投手 両ロール対応）
+// ----------------------------------------------------------------------------
+// 打者として: pitch-arsenal-stats?type=batter → 対戦球種別の被打率/wOBA/空振り率/hard_hit
+// 投手として: pitch-arsenal-stats?type=pitcher + 複数形 pitch-arsenals?type=avg_speed/avg_spin
+//             （複数形エンドポイントで球速・回転数を球種別に取得し「球速 -」問題を解消）
+// 全カラムは実データ検証で確定済み（last_name,first_name は1列扱い）。
+// ============================================================================
+
+export type PitchRole = "batter" | "pitcher";
+
+export interface PitchArsenalDetail {
+  pitchType: string;      // FF, SL, ST...
+  pitchName: string;      // 4-Seam Fastball...
+  jpName: string;         // フォーシーム...
+  usage: number;          // pitch_usage(%)
+  pitches: number;        // 投球数
+  pa: number;             // 対戦打席
+  ba: string;             // 被打率（投手）/ 被打率（打者は対該球種打率）
+  slg: string;
+  woba: string;
+  whiffPercent: number | null;   // 空振り率
+  kPercent: number | null;       // 三振率
+  hardHitPercent: number | null; // hard_hit率
+  estWoba: string;               // xwOBA相当
+  avgSpeed: number | null;       // 球速 mph（投手のみ・複数形から）
+  avgSpin: number | null;        // 回転数 rpm（投手のみ・複数形から）
+}
+
+// 参照: pitch-arsenal-stats CSV のカラム順（実データ検証で確定）
+//   last_name+first_name | player_id | team_name_alt | pitch_type | pitch_name |
+//   run_value_per_100 | run_value | pitches | pitch_usage | pa | ba | slg | woba |
+//   whiff_percent | k_percent | put_away | est_ba | est_slg | est_woba | hard_hit_percent
+// 実コードは buildHeaderIndex によるヘッダ名引きで列ズレに強くしている。
+function buildHeaderIndex(header: string[]): Record<string, number> {
+  const idx: Record<string, number> = {};
+  header.forEach((h, i) => {
+    idx[h.trim().replace(/^"|"$/g, "")] = i;
+  });
+  return idx;
+}
+
+const stripQ = (v: string | undefined) => (v ?? "").replace(/^"|"$/g, "").trim();
+const num = (v: string | undefined): number | null => {
+  const n = parseFloat(stripQ(v));
+  return Number.isFinite(n) ? n : null;
+};
+
+/**
+ * 複数形 pitch-arsenals?type=avg_speed|avg_spin を取得し、
+ * 球種コード(FF,SL...) → 数値 のマップを返す（投手用・横持ちワイド形式）。
+ * 取得失敗時は空マップ（graceful degrade：球速/回転数なしで成立させる）。
+ */
+async function getPitchVelocityOrSpin(
+  season: number,
+  type: "avg_speed" | "avg_spin"
+): Promise<Record<string, number>> {
+  try {
+    const url = `${SAVANT_BASE}/leaderboard/pitch-arsenals?year=${season}&min=1&type=${type}&hand=&csv=true`;
+    const res = await fetch(url, {
+      next: { revalidate: 3600 },
+      headers: {
+        "User-Agent": "ohtani-complete-database/1.0 (+https://github.com/AlumNET-dshigami/ohtani-complete-database)",
+        Accept: "text/csv,*/*",
+      },
+    });
+    if (!res.ok) return {};
+    const text = await res.text();
+    const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
+    if (lines.length < 2) return {};
+
+    const header = parseCsvLine(lines[0]).map((h) => stripQ(h).toLowerCase());
+    const iPitcher = header.indexOf("pitcher");
+    if (iPitcher === -1) return {};
+
+    const row = lines
+      .slice(1)
+      .map(parseCsvLine)
+      .find((r) => stripQ(r[iPitcher]) === String(OHTANI_PLAYER_ID));
+    if (!row) return {};
+
+    // ヘッダは "ff_avg_speed" のような形式。接尾辞を外して球種コード(大文字)に
+    const suffix = type === "avg_speed" ? "_avg_speed" : "_avg_spin";
+    const map: Record<string, number> = {};
+    header.forEach((h, i) => {
+      if (!h.endsWith(suffix)) return;
+      const code = h.slice(0, h.length - suffix.length).toUpperCase();
+      const v = num(row[i]);
+      if (v !== null) map[code] = v;
+    });
+    return map;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * 球種の深掘りデータを取得（打者/投手ロール別）。
+ * - batter: 対戦球種別の被打率/wOBA/空振り率/hard_hit
+ * - pitcher: 上記 + 複数形エンドポイントの球速/回転数をマージ
+ */
+export async function getPitchArsenalDetail(
+  season: number,
+  role: PitchRole
+): Promise<PitchArsenalDetail[]> {
+  try {
+    const url = `${SAVANT_BASE}/leaderboard/pitch-arsenal-stats?type=${role}&year=${season}&min=0&csv=true`;
+    const [arsenalRes, speedMap, spinMap] = await Promise.all([
+      fetch(url, {
+        next: { revalidate: 3600 },
+        headers: {
+          "User-Agent": "ohtani-complete-database/1.0 (+https://github.com/AlumNET-dshigami/ohtani-complete-database)",
+          Accept: "text/csv,*/*",
+        },
+      }),
+      // 球速/回転数は投手ロールのみ取得（打者には球速概念がない）
+      role === "pitcher"
+        ? getPitchVelocityOrSpin(season, "avg_speed")
+        : Promise.resolve<Record<string, number>>({}),
+      role === "pitcher"
+        ? getPitchVelocityOrSpin(season, "avg_spin")
+        : Promise.resolve<Record<string, number>>({}),
+    ]);
+
+    if (!arsenalRes.ok) return [];
+    const text = await arsenalRes.text();
+    if (!text || text.length < 10) return [];
+
+    const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
+    if (lines.length < 2) return [];
+
+    const header = parseCsvLine(lines[0]);
+    const H = buildHeaderIndex(header);
+    const iPid = H["player_id"];
+    const iType = H["pitch_type"];
+    if (iPid === undefined || iType === undefined) return [];
+
+    const rows = lines.slice(1).map(parseCsvLine);
+    const ohtaniRows = rows.filter((r) => stripQ(r[iPid]) === String(OHTANI_PLAYER_ID));
+
+    return ohtaniRows
+      .map((r): PitchArsenalDetail => {
+        const code = stripQ(r[iType]);
+        return {
+          pitchType: code,
+          pitchName: stripQ(r[H["pitch_name"]]),
+          jpName: getJapanesePitchName(code),
+          usage: num(r[H["pitch_usage"]]) ?? 0,
+          pitches: num(r[H["pitches"]]) ?? 0,
+          pa: num(r[H["pa"]]) ?? 0,
+          ba: stripQ(r[H["ba"]]) || "-",
+          slg: stripQ(r[H["slg"]]) || "-",
+          woba: stripQ(r[H["woba"]]) || "-",
+          whiffPercent: num(r[H["whiff_percent"]]),
+          kPercent: num(r[H["k_percent"]]),
+          hardHitPercent: num(r[H["hard_hit_percent"]]),
+          estWoba: stripQ(r[H["est_woba"]]) || "-",
+          avgSpeed: speedMap[code] ?? null,
+          avgSpin: spinMap[code] ?? null,
+        };
+      })
+      .filter((d) => d.usage > 0 || d.pitches > 0)
+      .sort((a, b) => b.usage - a.usage);
+  } catch {
+    return [];
   }
 }
 
