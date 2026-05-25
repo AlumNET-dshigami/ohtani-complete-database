@@ -8,6 +8,9 @@
   --dodger-blue-dark: #003d6b;
   --dodger-red: #EF3E42;
   --accent-gold: #D4A843;
+  /* Phase1: 差分表示用 diverging（青⇔オレンジ）。緑赤の信号色は使わない方針 */
+  --diff-orange: #E8833A;
+  --diff-orange-soft: rgba(232, 131, 58, 0.15);
   --surface: #ffffff;
   --surface-alt: #f1f5f9;
   --border: rgba(0, 90, 156, 0.12);
@@ -22,6 +25,8 @@
   --color-dodger-blue-dark: var(--dodger-blue-dark);
   --color-dodger-red: var(--dodger-red);
   --color-accent-gold: var(--accent-gold);
+  --color-diff-orange: var(--diff-orange);
+  --color-diff-orange-soft: var(--diff-orange-soft);
   --color-surface: var(--surface);
   --color-surface-alt: var(--surface-alt);
   --color-border: var(--border);
@@ -30,13 +35,25 @@
   --font-mono: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
 }
 
+.dark {
+  --background: #0a0e1a;
+  --foreground: #e2e8f0;
+  --dodger-blue-light: #0d2847;
+  --surface: #121826;
+  --surface-alt: #1e293b;
+  --diff-orange-soft: rgba(232, 131, 58, 0.18);
+  --border: rgba(0, 90, 156, 0.2);
+  --border-strong: rgba(0, 90, 156, 0.35);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1120;
+    --background: #0a0e1a;
     --foreground: #e2e8f0;
     --dodger-blue-light: #0d2847;
-    --surface: #111827;
+    --surface: #121826;
     --surface-alt: #1e293b;
+    --diff-orange-soft: rgba(232, 131, 58, 0.18);
     --border: rgba(0, 90, 156, 0.2);
     --border-strong: rgba(0, 90, 156, 0.35);
   }
@@ -120,4 +137,27 @@ body {
 /* Safe area for bottom nav on notched devices */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Phase1: ダーク主役カードのホバーglow（やりすぎない控えめな発光） */
+.glow-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.glow-hover:hover {
+  border-color: rgba(0, 90, 156, 0.4);
+  box-shadow: 0 0 0 1px rgba(0, 90, 156, 0.25), 0 8px 30px -10px rgba(0, 90, 156, 0.35);
+}
+
+/* Phase1: 数字カウントアップ用の軽いfade+rise（アニメは控えめに） */
+@keyframes countUpIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-up {
+  animation: countUpIn 0.5s ease-out forwards;
+}
+
+/* 桁揃え（主数字用） */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
