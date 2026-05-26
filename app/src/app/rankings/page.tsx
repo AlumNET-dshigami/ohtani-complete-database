@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { getBattingLeaders, getPitchingLeaders, getTitleRaces } from "@/lib/rankings-api";
 import type { LeaderCategory, LeagueScope, TitleRace, TitleSnapshots } from "@/lib/rankings-api";
 import { fetchWARRanking, type WARRankingResult, type WARScope } from "@/lib/war-scraper";
@@ -105,18 +107,12 @@ function LeaderBoard({ category }: { category: LeaderCategory }) {
   );
 }
 
-/** public/data/title-snapshots.json を静的に読み込む（ビルド時またはSSR時） */
+/** public/data/title-snapshots.json を静的に読み込む（Server Component: fs直読み） */
 async function loadTitleSnapshots(): Promise<TitleSnapshots> {
   try {
-    const baseUrl =
-      process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/data/title-snapshots.json`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return { snapshots: [] };
-    return await res.json();
+    const filePath = join(process.cwd(), "public/data/title-snapshots.json");
+    const raw = readFileSync(filePath, "utf-8");
+    return JSON.parse(raw) as TitleSnapshots;
   } catch {
     return { snapshots: [] };
   }
