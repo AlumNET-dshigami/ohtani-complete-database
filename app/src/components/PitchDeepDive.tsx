@@ -200,11 +200,14 @@ function BatterView({ data }: { data: PitchArsenalDetail[] }) {
 function PitcherView({ data }: { data: PitchArsenalDetail[] }) {
   const [sort, setSort] = useState<SortKey>("usage");
 
-  // ヒーロー: 変化球（FF/SI以外）で使用率が高く空振り率最大の決め球
+  // ヒーロー: 変化球（FF/SI/FC以外）で空振り率 > 0 の球種の中から空振り率最大の決め球
+  // 空振り率 0.0% の球種（データ不足・投球なし）は除外する
   const hero = useMemo(() => {
     const breaking = data.filter((d) => !["FF", "SI", "FC"].includes(d.pitchType));
     const pool = breaking.length ? breaking : data;
-    return [...pool].sort((a, b) => (b.whiffPercent ?? 0) - (a.whiffPercent ?? 0))[0];
+    const withWhiff = pool.filter((d) => (d.whiffPercent ?? 0) > 0);
+    const candidates = withWhiff.length ? withWhiff : pool;
+    return [...candidates].sort((a, b) => (b.whiffPercent ?? 0) - (a.whiffPercent ?? 0))[0];
   }, [data]);
 
   // 被打率横棒（低いほど良い）

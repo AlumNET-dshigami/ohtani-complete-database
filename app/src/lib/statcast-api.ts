@@ -7,6 +7,7 @@ export interface ZoneData {
   value: string;
   color: string;
   temp: string;
+  count?: number;
 }
 
 export interface HotColdZoneCategory {
@@ -31,6 +32,7 @@ interface ZoneRaw {
   value?: string;
   color?: string;
   temp?: string;
+  count?: number;
 }
 
 interface StatRaw {
@@ -71,6 +73,7 @@ export async function getHotColdZones(
             value: z.value ?? "",
             color: z.color ?? "rgba(128,128,128,0.3)",
             temp: z.temp ?? "neutral",
+            count: z.count ?? 0,
           })),
         });
       }
