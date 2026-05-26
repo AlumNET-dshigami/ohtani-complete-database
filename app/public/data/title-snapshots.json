@@ -1,0 +1,12 @@
+{
+  "snapshots": [
+    {
+      "date": "2026-05-26",
+      "homeRuns": { "rank": null, "value": null },
+      "runsBattedIn": { "rank": null, "value": null },
+      "battingAverage": { "rank": null, "value": null },
+      "earnedRunAverage": { "rank": null, "value": null },
+      "strikeouts": { "rank": null, "value": null }
+    }
+  ]
+}

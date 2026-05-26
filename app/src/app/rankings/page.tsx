@@ -1,5 +1,5 @@
 import { getBattingLeaders, getPitchingLeaders, getTitleRaces } from "@/lib/rankings-api";
-import type { LeaderCategory, LeagueScope, TitleRace } from "@/lib/rankings-api";
+import type { LeaderCategory, LeagueScope, TitleRace, TitleSnapshots } from "@/lib/rankings-api";
 import { fetchWARRanking, type WARRankingResult, type WARScope } from "@/lib/war-scraper";
 import { getCurrentSeasonWAR } from "@/lib/war-source";
 import TitleRaceDashboard from "@/components/TitleRaceDashboard";
@@ -105,6 +105,23 @@ function LeaderBoard({ category }: { category: LeaderCategory }) {
   );
 }
 
+/** public/data/title-snapshots.json を静的に読み込む（ビルド時またはSSR時） */
+async function loadTitleSnapshots(): Promise<TitleSnapshots> {
+  try {
+    const baseUrl =
+      process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/data/title-snapshots.json`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return { snapshots: [] };
+    return await res.json();
+  } catch {
+    return { snapshots: [] };
+  }
+}
+
 export default async function RankingsPage() {
   const currentYear = new Date().getFullYear();
   const [
@@ -117,6 +134,7 @@ export default async function RankingsPage() {
     warNl,
     warAl,
     warResult,
+    titleSnapshots,
   ] = await Promise.all([
     getBattingLeaders(currentYear),
     getPitchingLeaders(currentYear),
@@ -127,6 +145,7 @@ export default async function RankingsPage() {
     fetchWARRanking(currentYear, "NL"),
     fetchWARRanking(currentYear, "AL"),
     getCurrentSeasonWAR(currentYear),
+    loadTitleSnapshots(),
   ]);
 
   const byScope: Record<LeagueScope, TitleRace[]> = {
@@ -170,7 +189,11 @@ export default async function RankingsPage() {
         <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
           大谷の所属するナ・リーグを基準に「タイトルまであと何本／何厘」を表示
         </p>
-        <TitleRaceDashboard byScope={byScope} season={currentYear} />
+        <TitleRaceDashboard
+          byScope={byScope}
+          season={currentYear}
+          snapshots={titleSnapshots.snapshots}
+        />
       </section>
 
       {/* 機能C: WARランキング */}
