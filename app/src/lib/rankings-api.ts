@@ -280,3 +280,36 @@ export function formatTitleValue(
   if (unit === "era") return n.toFixed(2);
   return String(Math.round(n));
 }
+
+// ============================================================================
+// 日次スナップショット型（public/data/title-snapshots.json）
+// ============================================================================
+
+export interface SnapshotEntry {
+  rank: number | null;
+  value: number | null;
+}
+
+export interface DailySnapshot {
+  date: string;
+  homeRuns: SnapshotEntry;
+  runsBattedIn: SnapshotEntry;
+  battingAverage: SnapshotEntry;
+  earnedRunAverage: SnapshotEntry;
+  strikeouts: SnapshotEntry;
+}
+
+export interface TitleSnapshots {
+  snapshots: DailySnapshot[];
+}
+
+/** スナップショットから特定カテゴリのスパークライン用データを抽出 */
+export function extractSparklineData(
+  snapshots: DailySnapshot[],
+  category: keyof Omit<DailySnapshot, "date">
+): Array<{ date: string; rank: number | null }> {
+  return snapshots.map((s) => ({
+    date: s.date,
+    rank: s[category]?.rank ?? null,
+  }));
+}

@@ -1,15 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { LeagueScope, TitleRace } from "@/lib/rankings-api";
-import { formatTitleValue } from "@/lib/rankings-api";
+import type { LeagueScope, TitleRace, DailySnapshot } from "@/lib/rankings-api";
+import { formatTitleValue, extractSparklineData } from "@/lib/rankings-api";
 import CompareGauge from "./CompareGauge";
 import CountUp from "./CountUp";
+import RankSparkline from "./RankSparkline";
 
 interface Props {
   /** スコープ別のタイトル争いデータ（サーバーで3スコープ分取得して渡す） */
   byScope: Record<LeagueScope, TitleRace[]>;
   season: number;
+  /** 日次スナップショット（オプション。なくても表示は成立する） */
+  snapshots?: DailySnapshot[];
 }
 
 const SCOPES: { key: LeagueScope; label: string }[] = [
@@ -45,7 +48,7 @@ function gapInfo(race: TitleRace): { gap: number | null; vs: "leader" | "second"
   return { gap: Math.abs(race.lowerIsBetter ? -raw : raw) || Math.abs(raw), vs: "leader" };
 }
 
-export default function TitleRaceDashboard({ byScope, season }: Props) {
+export default function TitleRaceDashboard({ byScope, season, snapshots = [] }: Props) {
   const [scope, setScope] = useState<LeagueScope>("NL");
   const races = byScope[scope] ?? [];
 
@@ -115,9 +118,23 @@ export default function TitleRaceDashboard({ byScope, season }: Props) {
       {/* タイトル別カードグリッド */}
       {anyData && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {races.map((race) => (
-            <TitleCard key={race.apiKey} race={race} isHero={hero?.apiKey === race.apiKey} />
-          ))}
+          {races.map((race) => {
+            const sparkData =
+              snapshots.length > 0
+                ? extractSparklineData(
+                    snapshots,
+                    race.apiKey as keyof Omit<(typeof snapshots)[0], "date">
+                  )
+                : [];
+            return (
+              <TitleCard
+                key={race.apiKey}
+                race={race}
+                isHero={hero?.apiKey === race.apiKey}
+                sparkData={sparkData}
+              />
+            );
+          })}
         </div>
       )}
     </div>
@@ -210,7 +227,15 @@ function HeroRace({ race }: { race: TitleRace }) {
 }
 
 /** タイトル別カード */
-function TitleCard({ race, isHero }: { race: TitleRace; isHero: boolean }) {
+function TitleCard({
+  race,
+  isHero,
+  sparkData = [],
+}: {
+  race: TitleRace;
+  isHero: boolean;
+  sparkData?: Array<{ date: string; rank: number | null }>;
+}) {
   const fmt = (n: number | null) => formatTitleValue(n, race.unit);
   const { gap } = gapInfo(race);
   const hero = heroValueParts(race);
@@ -236,26 +261,31 @@ function TitleCard({ race, isHero }: { race: TitleRace; isHero: boolean }) {
           : "border-border dark:border-white/5"
       }`}
     >
-      {/* ヘッダ: タイトル名＋順位バッジ */}
-      <div className="flex items-start justify-between">
+      {/* ヘッダ: タイトル名＋順位バッジ＋スパークライン */}
+      <div className="flex items-start justify-between gap-2">
         <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200">{race.label}</h4>
-        {ranked ? (
-          <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-              race.ohtaniIsLeader
-                ? "bg-accent-gold/20 text-accent-gold"
-                : race.ohtaniRank! <= 3
-                ? "bg-dodger-blue text-white"
-                : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
-            }`}
-          >
-            {race.ohtaniIsLeader ? "👑 首位" : `${race.ohtaniRank}位`}
-          </span>
-        ) : (
-          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-            圏外
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {sparkData.length >= 2 && (
+            <RankSparkline data={sparkData} width={64} height={32} />
+          )}
+          {ranked ? (
+            <span
+              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                race.ohtaniIsLeader
+                  ? "bg-accent-gold/20 text-accent-gold"
+                  : race.ohtaniRank! <= 3
+                  ? "bg-dodger-blue text-white"
+                  : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+              }`}
+            >
+              {race.ohtaniIsLeader ? "👑 首位" : `${race.ohtaniRank}位`}
+            </span>
+          ) : (
+            <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+              圏外
+            </span>
+          )}
+        </div>
       </div>
 
       {ranked ? (
