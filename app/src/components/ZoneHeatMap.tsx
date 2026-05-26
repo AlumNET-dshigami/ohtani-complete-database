@@ -26,20 +26,6 @@ const STAT_SHORT: Record<string, string> = {
   exitVelocity: "EV",
 };
 
-// ストライクゾーン (1-9) の3×3グリッド位置
-// 野球の打者視点: 上=高め、下=低め、左=インサイド(右打者)、右=アウトサイド
-const STRIKE_ZONE_POSITIONS: Record<string, { row: number; col: number }> = {
-  "01": { row: 0, col: 0 },
-  "02": { row: 0, col: 1 },
-  "03": { row: 0, col: 2 },
-  "04": { row: 1, col: 0 },
-  "05": { row: 1, col: 1 },
-  "06": { row: 1, col: 2 },
-  "07": { row: 2, col: 0 },
-  "08": { row: 2, col: 1 },
-  "09": { row: 2, col: 2 },
-};
-
 // ボールゾーン: 11=左上, 12=右上, 13=左下, 14=右下
 // レイアウト:
 //   [11][1 ][2 ][3 ][12]
@@ -174,6 +160,7 @@ function ZoneCell({
       } ${isLowCount ? "opacity-60" : ""}`}
       style={{ backgroundColor: bgColor }}
       title={`Zone ${zone}: ${displayValue} (${count}打席)`}
+      aria-label={`Zone ${zone}: ${displayValue}（${count}打席）`}
     >
       <span
         className={`font-bold text-white drop-shadow-md ${
