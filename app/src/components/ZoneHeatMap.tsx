@@ -555,7 +555,7 @@ export default function ZoneHeatMap({ categories, title, zoneXwoba }: ZoneHeatMa
                   Zone {insight.worstZone}
                   <span className="ml-2 text-base">{insight.worstValue}</span>
                 </p>
-                <p className="mt-1 text-xs text-blue-500/80 dark:text-red-400/70">
+                <p className="mt-1 text-xs text-blue-500/80 dark:text-blue-400/70">
                   このゾーンが最も数値が低い
                 </p>
               </div>

@@ -28,7 +28,7 @@ const OUTPUT_FILE = join(__dirname, "../public/data/zone-xwoba.json");
 
 /** Baseball Savant から Statcast CSVを取得してテキストを返す */
 async function fetchStatcastCsv(season) {
-  const today = new Date().toISOString().slice(0, 10);
+  const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
   const seasonStart = season === 2026 ? SEASON_START : `${season}-03-28`;
 
   const url =
@@ -37,7 +37,7 @@ async function fetchStatcastCsv(season) {
     `&player_type=batter` +
     `&type=details` +
     `&game_date_gt=${seasonStart}` +
-    `&game_date_lt=${today}` +
+    `&game_date_lt=${tomorrow}` +
     `&sort_col=pitches` +
     `&sort_order=desc`;
 
@@ -135,7 +135,7 @@ function aggregateCsv(csvText) {
   const zones = {};
   for (const [zone, stats] of Object.entries(zoneStats)) {
     const xwoba =
-      stats.xwobaCount > 0
+      stats.xwobaCount > 0 && stats.battedBalls > 0
         ? Math.round((stats.xwobaSum / stats.xwobaCount) * 1000) / 1000
         : null;
     const barrelRate =
@@ -224,7 +224,7 @@ async function main() {
     zones,
   };
 
-  writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2), "utf-8");
+  writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2) + "\n", "utf-8");
   console.log(
     `[INFO] zone-xwoba.json saved. Zones: ${Object.keys(zones).join(", ")}`
   );

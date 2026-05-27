@@ -3,7 +3,7 @@
   "season": 2026,
   "zones": {
     "1": {
-      "xwoba": 0,
+      "xwoba": null,
       "barrelRate": null,
       "pitches": 33,
       "battedBalls": 0,
