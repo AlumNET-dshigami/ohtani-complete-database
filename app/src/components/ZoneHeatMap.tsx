@@ -3,9 +3,27 @@
 import type { HotColdZoneCategory } from "@/lib/statcast-api";
 import { useMemo, useState } from "react";
 
+/** zone-xwoba.json の1ゾーン分の型 */
+export interface ZoneXwobaEntry {
+  xwoba: number | null;
+  barrelRate: number | null;
+  pitches: number;
+  battedBalls: number;
+  barrels: number;
+}
+
+/** zone-xwoba.json のルート型 */
+export interface ZoneXwobaData {
+  fetchedAt: string;
+  season: number;
+  zones: Record<string, ZoneXwobaEntry>;
+}
+
 interface ZoneHeatMapProps {
   categories: HotColdZoneCategory[];
   title: string;
+  /** zone-xwoba.json から読み込んだStatcastデータ（オプション） */
+  zoneXwoba?: ZoneXwobaData | null;
 }
 
 const STAT_LABELS: Record<string, string> = {
@@ -15,6 +33,9 @@ const STAT_LABELS: Record<string, string> = {
   onBasePercentage: "出塁率",
   homeRuns: "本塁打",
   exitVelocity: "打球速度",
+  // Statcast拡張タブ
+  xwoba: "xwOBA",
+  barrelRate: "バレル率",
 };
 
 const STAT_SHORT: Record<string, string> = {
@@ -24,7 +45,13 @@ const STAT_SHORT: Record<string, string> = {
   onBasePercentage: "OBP",
   homeRuns: "HR",
   exitVelocity: "EV",
+  xwoba: "xwOBA",
+  barrelRate: "Barrel%",
 };
+
+/** Statcast拡張タブのキー */
+const STATCAST_TABS = ["xwoba", "barrelRate"] as const;
+type StatcastTab = (typeof STATCAST_TABS)[number];
 
 // ボールゾーン: 11=左上, 12=右上, 13=左下, 14=右下
 // レイアウト:
@@ -63,6 +90,45 @@ function getBallZoneStyle(color: string, temp: string): string {
   if (temp === "hot") return "rgba(220, 38, 38, 0.4)";
   if (temp === "cold") return "rgba(59, 130, 246, 0.4)";
   return "rgba(156, 163, 175, 0.15)";
+}
+
+/**
+ * xwOBA / バレル率のヒートカラーを計算する（0〜1の値域）
+ * xwOBA: リーグ平均 ~0.320 を中央、0.5以上=ホット、0.1以下=コールド
+ * バレル率: 0.15以上=ホット、0以下=コールド
+ */
+function getStatcastHeatStyle(
+  value: number | null,
+  tab: StatcastTab,
+  isBall: boolean = false
+): string {
+  if (value === null) return "rgba(156, 163, 175, 0.2)";
+
+  let ratio: number; // 0.0(コールド) 〜 1.0(ホット)
+
+  if (tab === "xwoba") {
+    // xwOBA: 0.100=コールド, 0.320=中央, 0.600=ホット
+    ratio = Math.min(Math.max((value - 0.1) / 0.5, 0), 1);
+  } else {
+    // barrelRate: 0=コールド, 0.10=中央, 0.30=ホット
+    ratio = Math.min(Math.max(value / 0.3, 0), 1);
+  }
+
+  const alpha = isBall ? 0.5 : 0.7;
+
+  if (ratio >= 0.7) {
+    // ホット: 赤
+    return `rgba(220, 38, 38, ${alpha})`;
+  } else if (ratio >= 0.4) {
+    // 平均: オレンジ系
+    const intensity = (ratio - 0.4) / 0.3;
+    const r = Math.round(220 + (255 - 220) * (1 - intensity));
+    const g = Math.round(38 + (165 - 38) * (1 - intensity));
+    return `rgba(${r}, ${g}, 60, ${alpha * 0.85})`;
+  } else {
+    // コールド: 青
+    return `rgba(59, 130, 246, ${alpha})`;
+  }
 }
 
 interface ZoneInsight {
@@ -174,6 +240,62 @@ function ZoneCell({
   );
 }
 
+/** Statcast拡張タブ（xwOBA/バレル率）のゾーンセル */
+function StatcastZoneCell({
+  value,
+  battedBalls,
+  zone,
+  tab,
+  size = "md",
+  isBall = false,
+}: {
+  value: number | null;
+  battedBalls: number;
+  zone: string;
+  tab: StatcastTab;
+  size?: "sm" | "md";
+  isBall?: boolean;
+}) {
+  const bgColor = getStatcastHeatStyle(value, tab, isBall);
+  const isLowCount = battedBalls < 5;
+
+  let displayValue: string;
+  if (value === null) {
+    displayValue = "-";
+  } else if (tab === "xwoba") {
+    // xwOBA: .XXX 形式
+    displayValue = value < 0.001 ? "-" : `.${value.toFixed(3).slice(2)}`;
+  } else {
+    // barrelRate: XX% 形式
+    displayValue = value === 0 ? "0%" : `${Math.round(value * 100)}%`;
+  }
+
+  const tooltipText =
+    tab === "xwoba"
+      ? `Zone ${zone}: xwOBA ${displayValue} (${battedBalls}打球)`
+      : `Zone ${zone}: バレル率 ${displayValue} (${battedBalls}打球中${Math.round((value ?? 0) * battedBalls)}バレル)`;
+
+  return (
+    <div
+      className={`flex flex-col items-center justify-center rounded transition-transform hover:scale-105 ${
+        size === "sm" ? "h-10 w-10 sm:h-12 sm:w-12" : "h-16 w-16 sm:h-20 sm:w-20"
+      } ${isLowCount ? "opacity-50" : ""}`}
+      style={{ backgroundColor: bgColor }}
+      title={tooltipText}
+      aria-label={tooltipText}
+    >
+      <span
+        className={`font-bold text-white drop-shadow-md ${
+          size === "sm" ? "text-[10px]" : tab === "barrelRate" ? "text-sm sm:text-base" : "text-base sm:text-lg"
+        }`}
+      >
+        {displayValue}
+      </span>
+      <ZoneLabel zone={zone} />
+    </div>
+  );
+}
+
 function EmptyCell({ size = "md" }: { size?: "sm" | "md" }) {
   return (
     <div
@@ -185,9 +307,14 @@ function EmptyCell({ size = "md" }: { size?: "sm" | "md" }) {
   );
 }
 
-export default function ZoneHeatMap({ categories, title }: ZoneHeatMapProps) {
-  const availableStats = categories.map((c) => c.statName);
+export default function ZoneHeatMap({ categories, title, zoneXwoba }: ZoneHeatMapProps) {
+  const mlbStats = categories.map((c) => c.statName);
+  // Statcast拡張タブはzoneXwobaがある場合のみ表示
+  const statcastTabs: string[] = zoneXwoba ? (STATCAST_TABS as unknown as string[]) : [];
+  const availableStats = [...mlbStats, ...statcastTabs];
+
   const [selectedStat, setSelectedStat] = useState(availableStats[0] ?? "battingAverage");
+  const isStatcastTab = (STATCAST_TABS as readonly string[]).includes(selectedStat);
 
   const category = categories.find((c) => c.statName === selectedStat);
 
@@ -244,22 +371,43 @@ export default function ZoneHeatMap({ categories, title }: ZoneHeatMapProps) {
         );
         if (ballEntry) {
           const [ballZone] = ballEntry;
-          const zd = zoneMap.get(ballZone);
-          if (zd) {
+
+          if (isStatcastTab && zoneXwoba) {
+            const entry = zoneXwoba.zones[ballZone];
+            const statValue = entry
+              ? selectedStat === "xwoba"
+                ? entry.xwoba
+                : entry.barrelRate
+              : null;
             cols.push(
-              <ZoneCell
+              <StatcastZoneCell
                 key={`b${ballZone}`}
                 zone={ballZone}
-                value={zd.value}
-                count={zd.count}
-                color={zd.color}
-                temp={zd.temp}
+                value={statValue ?? null}
+                battedBalls={entry?.battedBalls ?? 0}
+                tab={selectedStat as StatcastTab}
                 size="sm"
                 isBall
               />
             );
           } else {
-            cols.push(<EmptyCell key={`b${ballZone}`} size="sm" />);
+            const zd = zoneMap.get(ballZone);
+            if (zd) {
+              cols.push(
+                <ZoneCell
+                  key={`b${ballZone}`}
+                  zone={ballZone}
+                  value={zd.value}
+                  count={zd.count}
+                  color={zd.color}
+                  temp={zd.temp}
+                  size="sm"
+                  isBall
+                />
+              );
+            } else {
+              cols.push(<EmptyCell key={`b${ballZone}`} size="sm" />);
+            }
           }
           continue;
         }
@@ -268,22 +416,42 @@ export default function ZoneHeatMap({ categories, title }: ZoneHeatMapProps) {
         if (row >= 0 && row <= 2 && col >= 1 && col <= 3) {
           const szNum = row * 3 + (col - 1) + 1; // 1〜9
           const zoneKey = String(szNum);
-          const paddedKey = szNum.toString().padStart(2, "0"); // 既存ZonePositionsとの互換
-          const zd = zoneMap.get(zoneKey) ?? zoneMap.get(paddedKey);
-          if (zd) {
+
+          if (isStatcastTab && zoneXwoba) {
+            const entry = zoneXwoba.zones[zoneKey];
+            const statValue = entry
+              ? selectedStat === "xwoba"
+                ? entry.xwoba
+                : entry.barrelRate
+              : null;
             cols.push(
-              <ZoneCell
+              <StatcastZoneCell
                 key={`sz${szNum}`}
                 zone={zoneKey}
-                value={zd.value}
-                count={zd.count}
-                color={zd.color}
-                temp={zd.temp}
+                value={statValue ?? null}
+                battedBalls={entry?.battedBalls ?? 0}
+                tab={selectedStat as StatcastTab}
                 size="md"
               />
             );
           } else {
-            cols.push(<EmptyCell key={`sz${szNum}`} size="md" />);
+            const paddedKey = szNum.toString().padStart(2, "0"); // 既存ZonePositionsとの互換
+            const zd = zoneMap.get(zoneKey) ?? zoneMap.get(paddedKey);
+            if (zd) {
+              cols.push(
+                <ZoneCell
+                  key={`sz${szNum}`}
+                  zone={zoneKey}
+                  value={zd.value}
+                  count={zd.count}
+                  color={zd.color}
+                  temp={zd.temp}
+                  size="md"
+                />
+              );
+            } else {
+              cols.push(<EmptyCell key={`sz${szNum}`} size="md" />);
+            }
           }
           continue;
         }
@@ -356,8 +524,8 @@ export default function ZoneHeatMap({ categories, title }: ZoneHeatMapProps) {
           </p>
         </div>
 
-        {/* 読み解きパネル */}
-        {insight && (
+        {/* 読み解きパネル: MLB Stats API タブ */}
+        {!isStatcastTab && insight && (
           <div className="flex flex-1 flex-col gap-3 min-w-0">
             <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
               {STAT_LABELS[selectedStat] ?? selectedStat} 読み解き
@@ -387,7 +555,7 @@ export default function ZoneHeatMap({ categories, title }: ZoneHeatMapProps) {
                   Zone {insight.worstZone}
                   <span className="ml-2 text-base">{insight.worstValue}</span>
                 </p>
-                <p className="mt-1 text-xs text-blue-500/80 dark:text-blue-400/70">
+                <p className="mt-1 text-xs text-blue-500/80 dark:text-red-400/70">
                   このゾーンが最も数値が低い
                 </p>
               </div>
@@ -407,6 +575,90 @@ export default function ZoneHeatMap({ categories, title }: ZoneHeatMapProps) {
 
             <p className="text-[10px] text-gray-400 dark:text-gray-500">
               MLB Stats API hotColdZones より取得。5打席未満のゾーンは薄く表示。
+            </p>
+          </div>
+        )}
+
+        {/* 読み解きパネル: Statcast拡張タブ (xwOBA / バレル率) */}
+        {isStatcastTab && zoneXwoba && (
+          <div className="flex flex-1 flex-col gap-3 min-w-0">
+            <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              {STAT_LABELS[selectedStat]} 読み解き
+            </h4>
+
+            {/* 最高ゾーン */}
+            {(() => {
+              const szEntries = Object.entries(zoneXwoba.zones)
+                .filter(([z, e]) => {
+                  const n = parseInt(z);
+                  return n >= 1 && n <= 9 && e.battedBalls >= 5;
+                })
+                .map(([z, e]) => ({
+                  zone: z,
+                  val: selectedStat === "xwoba" ? e.xwoba : e.barrelRate,
+                  battedBalls: e.battedBalls,
+                }))
+                .filter((e) => e.val !== null)
+                .sort((a, b) => (b.val ?? 0) - (a.val ?? 0));
+
+              if (szEntries.length === 0) return null;
+              const best = szEntries[0];
+              const worst = szEntries[szEntries.length - 1];
+              const fmt = (v: number | null) => {
+                if (v === null) return "-";
+                if (selectedStat === "xwoba") return `.${v.toFixed(3).slice(2)}`;
+                return `${Math.round(v * 100)}%`;
+              };
+
+              return (
+                <>
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800/40 dark:bg-red-900/20">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-red-500">
+                      最強ゾーン（5打球以上）
+                    </p>
+                    <p className="mt-0.5 text-xl font-bold text-red-600 dark:text-red-400">
+                      Zone {best.zone}
+                      <span className="ml-2 text-base">{fmt(best.val)}</span>
+                    </p>
+                    <p className="mt-1 text-xs text-red-500/80 dark:text-red-400/70">
+                      {best.battedBalls}打球での{STAT_LABELS[selectedStat]}
+                    </p>
+                  </div>
+
+                  {worst.zone !== best.zone && (
+                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800/40 dark:bg-blue-900/20">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-500">
+                        最低ゾーン（5打球以上）
+                      </p>
+                      <p className="mt-0.5 text-xl font-bold text-blue-600 dark:text-blue-400">
+                        Zone {worst.zone}
+                        <span className="ml-2 text-base">{fmt(worst.val)}</span>
+                      </p>
+                      <p className="mt-1 text-xs text-blue-500/80 dark:text-blue-400/70">
+                        {worst.battedBalls}打球での{STAT_LABELS[selectedStat]}
+                      </p>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+
+            <div className="rounded-lg border border-border bg-gray-50 p-3 dark:bg-gray-800/40">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                データソース
+              </p>
+              <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">
+                {selectedStat === "xwoba"
+                  ? "打球の速度・角度から期待値を算出した指標。実際の打球の質を反映。"
+                  : "打球速度98mph以上かつ打球角度26〜30°の理想的な打球の割合。"}
+              </p>
+              <p className="mt-1 text-[10px] text-gray-400">
+                データ取得: {new Date(zoneXwoba.fetchedAt).toLocaleDateString("ja-JP")}
+              </p>
+            </div>
+
+            <p className="text-[10px] text-gray-400 dark:text-gray-500">
+              Baseball Savant (Statcast) より取得。5打球未満のゾーンは薄く表示。
             </p>
           </div>
         )}

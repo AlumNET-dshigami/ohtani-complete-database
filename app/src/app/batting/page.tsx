@@ -1,13 +1,27 @@
 import Link from "next/link";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { getCurrentSeasonStats, getGameLogBatting, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import { calcAdvancedBatting } from "@/lib/sabermetrics";
 import { getHotColdZones, getStatcastBatting, getPitchArsenalDetail } from "@/lib/statcast-api";
 import StatCard from "@/components/StatCard";
 import ZoneHeatMap from "@/components/ZoneHeatMap";
+import type { ZoneXwobaData } from "@/components/ZoneHeatMap";
 import SeasonProgressChart from "@/components/SeasonProgressChart";
 import PitchDeepDive from "@/components/PitchDeepDive";
 
 export const dynamic = "force-dynamic";
+
+/** zone-xwoba.json をサーバーサイドで読み込む（バッチ未実行時はnullを返す） */
+function loadZoneXwoba(): ZoneXwobaData | null {
+  try {
+    const filePath = join(process.cwd(), "public/data/zone-xwoba.json");
+    const raw = readFileSync(filePath, "utf-8");
+    return JSON.parse(raw) as ZoneXwobaData;
+  } catch {
+    return null;
+  }
+}
 
 export default async function BattingPage() {
   const currentYear = new Date().getFullYear();
@@ -19,6 +33,9 @@ export default async function BattingPage() {
     getPitchArsenalDetail(currentYear, "batter"),
     getPitchArsenalDetail(currentYear, "pitcher"),
   ]);
+
+  // Statcastゾーン別xwOBA/バレル率（バッチ生成済みJSONを読む）
+  const zoneXwoba = loadZoneXwoba();
 
   const batting = current?.batting;
   const adv = batting ? calcAdvancedBatting(batting) : null;
@@ -128,7 +145,11 @@ export default async function BattingPage() {
         <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
           ゾーン別打撃ヒートマップ
         </h2>
-        <ZoneHeatMap categories={zones} title="打撃ゾーン分析" />
+        <ZoneHeatMap
+          categories={zones}
+          title="打撃ゾーン分析"
+          zoneXwoba={zoneXwoba}
+        />
       </section>
 
       {/* Advanced Metrics */}

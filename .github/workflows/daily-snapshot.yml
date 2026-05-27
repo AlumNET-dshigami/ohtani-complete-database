@@ -25,10 +25,13 @@ jobs:
       - name: Fetch and append snapshot
         run: node app/scripts/fetch-daily-snapshot.mjs
 
+      - name: Fetch zone xwOBA data
+        run: node app/scripts/fetch-zone-xwoba.mjs
+
       - name: Commit if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore: daily stats snapshot'
-          file_pattern: 'app/public/data/title-snapshots.json'
+          file_pattern: 'app/public/data/title-snapshots.json app/public/data/zone-xwoba.json'
           commit_user_name: 'github-actions[bot]'
           commit_user_email: 'github-actions[bot]@users.noreply.github.com'
