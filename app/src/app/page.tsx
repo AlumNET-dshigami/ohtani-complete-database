@@ -12,6 +12,7 @@ import PitchingProgressChart from "@/components/PitchingProgressChart";
 import AdvancedStats from "@/components/AdvancedStats";
 import JapaneseVideoLinks from "@/components/JapaneseVideoLinks";
 import RakutenGoods from "@/components/RakutenGoods";
+import TwoWayGauge from "@/components/TwoWayGauge";
 
 export const dynamic = "force-dynamic";
 
@@ -101,6 +102,30 @@ export default async function DashboardPage() {
             <StatCard label="被本塁打" value={current.pitching.homeRuns} sub="HR" />
             <StatCard label="K/9" value={current.pitching.strikeoutsPer9} />
           </div>
+        </section>
+      )}
+
+      {/* Two-Way Gauge */}
+      {current?.batting && current?.pitching && (
+        <section>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+            二刀流ゲージ — リーグ平均との差
+          </h2>
+          <TwoWayGauge
+            hitting={{
+              obp: current.batting.obp,
+              avg: current.batting.avg,
+              ops: current.batting.ops,
+              homeRuns: current.batting.homeRuns,
+              rbi: current.batting.rbi,
+            }}
+            pitching={{
+              era: current.pitching.era,
+              strikeOuts: current.pitching.strikeOuts,
+              whip: current.pitching.whip,
+              wins: current.pitching.wins,
+            }}
+          />
         </section>
       )}
 
