@@ -1,8 +1,22 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { getPitchArsenalDetail, type PitchRole } from "@/lib/statcast-api";
 import { OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import PitchDeepDive from "@/components/PitchDeepDive";
+import PitchMovementPlot, { type PitchMovementData } from "@/components/PitchMovementPlot";
 
 export const dynamic = "force-dynamic";
+
+/** バッチ生成済みの pitch-movement.json を読み込む */
+function loadPitchMovement(): PitchMovementData | null {
+  try {
+    const filePath = join(process.cwd(), "public/data/pitch-movement.json");
+    const raw = readFileSync(filePath, "utf-8");
+    return JSON.parse(raw) as PitchMovementData;
+  } catch {
+    return null;
+  }
+}
 
 export default async function PitchArsenalPage({
   searchParams,
@@ -17,6 +31,8 @@ export default async function PitchArsenalPage({
     getPitchArsenalDetail(currentYear, "batter"),
     getPitchArsenalDetail(currentYear, "pitcher"),
   ]);
+
+  const pitchMovement = loadPitchMovement();
 
   return (
     <div className="space-y-8">
@@ -44,8 +60,19 @@ export default async function PitchArsenalPage({
         initialRole={initialRole}
       />
 
+      {/* Pitch Movement Scatter Plot */}
+      {pitchMovement && (
+        <section>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+            球種変化量マップ（投手）
+          </h2>
+          <PitchMovementPlot data={pitchMovement} />
+        </section>
+      )}
+
       <p className="text-center text-[10px] text-gray-400 dark:text-gray-500">
         ※ データは Baseball Savant（Statcast）より取得。球速・回転数は投手としての投球球種について表示しています。
+        変化量はStatcast pfx_x / pfx_z をインチ変換（フィート × 12）。
       </p>
     </div>
   );
