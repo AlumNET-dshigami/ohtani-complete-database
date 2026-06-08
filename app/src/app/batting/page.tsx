@@ -4,11 +4,13 @@ import { join } from "path";
 import { getCurrentSeasonStats, getGameLogBatting, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import { calcAdvancedBatting } from "@/lib/sabermetrics";
 import { getHotColdZones, getStatcastBatting, getPitchArsenalDetail } from "@/lib/statcast-api";
+import { getTwoWayStats } from "@/lib/two-way-games";
 import StatCard from "@/components/StatCard";
 import ZoneHeatMap from "@/components/ZoneHeatMap";
 import type { ZoneXwobaData } from "@/components/ZoneHeatMap";
 import SeasonProgressChart from "@/components/SeasonProgressChart";
 import PitchDeepDive from "@/components/PitchDeepDive";
+import TwoWayFilter from "@/components/TwoWayFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +27,14 @@ function loadZoneXwoba(): ZoneXwobaData | null {
 
 export default async function BattingPage() {
   const currentYear = new Date().getFullYear();
-  const [current, battingLog, zones, statcast, arsenalBatter, arsenalPitcher] = await Promise.all([
+  const [current, battingLog, zones, statcast, arsenalBatter, arsenalPitcher, twoWayStats] = await Promise.all([
     getCurrentSeasonStats(),
     getGameLogBatting(currentYear, "R"),
     getHotColdZones(currentYear, "hitting"),
     getStatcastBatting(currentYear),
     getPitchArsenalDetail(currentYear, "batter"),
     getPitchArsenalDetail(currentYear, "pitcher"),
+    getTwoWayStats(currentYear),
   ]);
 
   // Statcastゾーン別xwOBA/バレル率（バッチ生成済みJSONを読む）
@@ -55,6 +58,11 @@ export default async function BattingPage() {
             <p className="text-sm text-white/70">大谷翔平 — {currentYear}シーズン バッティングデータ</p>
           </div>
         </div>
+      </section>
+
+      {/* Two-Way Filter */}
+      <section>
+        <TwoWayFilter stats={twoWayStats} currentYear={currentYear} />
       </section>
 
       {/* Basic Batting Stats */}
