@@ -206,7 +206,7 @@ async function main() {
     pitches: aggregated,
   };
 
-  writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2), "utf-8");
+  writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2) + "\n", "utf-8");
   console.log(`[fetch-pitch-movement] Written to ${OUTPUT_FILE}`);
 }
 

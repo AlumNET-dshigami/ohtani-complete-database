@@ -45,7 +45,7 @@ async function fetchGameLog(
   try {
     const url =
       `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats` +
-      `?stats=gameLog&group=${group}&season=${season}&gameType=R`;
+      `?stats=gameLog&group=${group}&season=${season}&gameType=R&leagueId=104`;
 
     const res = await fetch(url, {
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
@@ -60,6 +60,8 @@ async function fetchGameLog(
     };
 
     const splits = data.stats?.[0]?.splits ?? [];
+    // NOTE: ダブルヘッダー（同日2試合）は Set の性質上1エントリに集約される。
+    // 厳密な突合が必要な場合は gamePk ベースの突合に変更すること。
     return new Set(splits.map((s) => s.date));
   } catch {
     return new Set();
@@ -72,7 +74,7 @@ async function fetchHittingGameLogDetail(
   try {
     const url =
       `${MLB_API_BASE}/people/${OHTANI_PLAYER_ID}/stats` +
-      `?stats=gameLog&group=hitting&season=${season}&gameType=R`;
+      `?stats=gameLog&group=hitting&season=${season}&gameType=R&leagueId=104`;
 
     const res = await fetch(url, {
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" },

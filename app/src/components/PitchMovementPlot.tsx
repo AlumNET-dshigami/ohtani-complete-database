@@ -155,7 +155,7 @@ export default function PitchMovementPlot({ data }: Props) {
             className="text-[10px] text-gray-400"
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", minWidth: 16 }}
           >
-            ← 捕手視点右 / 左 →
+            ← 捕手視点 左（スライド方向）
           </p>
           <div className="flex-1">
             <ResponsiveContainer width="100%" height={340}>
@@ -219,8 +219,9 @@ export default function PitchMovementPlot({ data }: Props) {
             </ResponsiveContainer>
           </div>
         </div>
+        {/* pfx_x は捕手視点。プラス=捕手右=右投手シュート方向、マイナス=捕手左=スライド方向 */}
         <p className="text-center text-[10px] text-gray-400">
-          ← 投手右投げ視点: 右方向がシュート / 左方向がスライド →
+          ← 捕手視点 左（スライド方向）　　　右（シュート方向）→
         </p>
       </div>
 

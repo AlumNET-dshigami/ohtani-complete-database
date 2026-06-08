@@ -215,6 +215,12 @@ export default function TwoWayFilter({ stats, currentYear }: Props) {
         </table>
       </div>
 
+      {stats.twoWayGames === 0 && (
+        <p className="mt-4 text-center text-sm text-gray-400 dark:text-gray-500">
+          {new Date().getFullYear()}シーズンの二刀流試合はまだありません
+        </p>
+      )}
+
       <p className="mt-3 text-[10px] text-gray-400 dark:text-gray-500">
         ※ OPSは簡易計算値（塁打数を HR×4 + 安打で近似）。打率は実測値。
         データはMLB Stats API ゲームログより取得（1時間キャッシュ）。
