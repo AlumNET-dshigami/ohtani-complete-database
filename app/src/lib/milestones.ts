@@ -53,6 +53,8 @@ export interface MilestoneStatus {
   /** 残り試合数ベースの到達予測年 (null = 計算不可) */
   projectedYear: number | null;
   pacePerGame: number | null;
+  /** ペース計算に使用した消化試合数（表示文言の分岐用） */
+  gamesPlayed: number;
 }
 
 async function fetchJson(url: string): Promise<unknown> {
@@ -100,9 +102,10 @@ export async function getCareerStats(): Promise<CareerStatSnapshot> {
       pitchingWins: Number(pitchingStat.wins       ?? 0),
     };
   } catch {
+    // Fallback values as of 2026-06 (update when MLB Stats API is unreachable)
     return {
       hittingHR: 291, hittingHits: 1120, hittingRBI: 704,
-      hittingK: 1168, pitchingK: 737, pitchingWins: 45,
+      hittingK: 1168, pitchingK: 1063, pitchingWins: 45,
     };
   }
 }
@@ -155,6 +158,8 @@ export async function getSeasonPace(year: number): Promise<SeasonPaceSnapshot> {
 /** MLB 1シーズンの標準試合数 */
 const SEASON_GAMES = 162;
 const PITCHER_SEASON_STARTS = 32;
+/** ペース計算に必要な最低消化試合数（序盤の過大/過小推定を避ける） */
+const MIN_GAMES_FOR_PACE = 10;
 
 function getCurrentValue(
   def: MilestoneDefinition,
@@ -179,6 +184,7 @@ function getSeasonPaceValue(
     switch (def.stat) {
       case "strikeOuts": return { perGame: pace.pitchingK / g, gameDivisor: PITCHER_SEASON_STARTS };
       case "wins":       return { perGame: pace.pitchingWins / g, gameDivisor: PITCHER_SEASON_STARTS };
+      default:           return { perGame: 0, gameDivisor: PITCHER_SEASON_STARTS };
     }
   }
   const g = pace.gamesPlayed || 1;
@@ -204,7 +210,7 @@ export function buildMilestoneStatuses(
     let projectedYear: number | null = null;
     let pacePerGame: number | null = null;
 
-    if (!achieved && pace.gamesPlayed > 0) {
+    if (!achieved && pace.gamesPlayed >= MIN_GAMES_FOR_PACE) {
       const { perGame, gameDivisor } = getSeasonPaceValue(def, pace);
       pacePerGame = perGame;
       if (perGame > 0) {
@@ -213,7 +219,8 @@ export function buildMilestoneStatuses(
         projectedYear = Math.ceil(currentYear + seasonsNeeded);
       }
     }
+    // gamesPlayed < MIN_GAMES_FOR_PACE の場合は projectedYear = null のまま（「データ蓄積中」表示）
 
-    return { def, current, remaining, achieved, projectedYear, pacePerGame };
+    return { def, current, remaining, achieved, projectedYear, pacePerGame, gamesPlayed: pace.gamesPlayed };
   });
 }

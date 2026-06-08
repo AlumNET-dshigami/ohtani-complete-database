@@ -44,9 +44,13 @@ function eraGaugeWidth(era: number): number {
 
 export default function TwoWayGauge({ hitting, pitching }: Props) {
   const obp = parseFloat(hitting.obp) || 0;
-  const era = parseFloat(pitching.era) || 0;
+  const era = parseFloat(pitching.era);
   const obpWidth = obpGaugeWidth(obp);
-  const eraWidth = eraGaugeWidth(era);
+  // ERA=0 または登板なし（strikeOuts=0）の場合はゲージを表示しない
+  const eraWidth =
+    isNaN(era) || era === 0 || pitching.strikeOuts === 0 || String(pitching.strikeOuts) === "0"
+      ? 0
+      : eraGaugeWidth(era);
 
   const obpDiff = (obp - LEAGUE_AVG.obp).toFixed(3);
   const eraDiff = (LEAGUE_AVG.era - era).toFixed(2);
@@ -91,7 +95,7 @@ export default function TwoWayGauge({ hitting, pitching }: Props) {
           </div>
 
           <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-            +{obpDiff} vs リーグ
+            {Number(obpDiff) >= 0 ? "+" : ""}{obpDiff} vs リーグ
           </p>
 
           {/* Sub stats */}

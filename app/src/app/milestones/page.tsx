@@ -18,6 +18,11 @@ export default async function MilestonesPage() {
 
   const statuses = buildMilestoneStatuses(career, pace, currentYear);
 
+  // 未達成の中で最も残り数が少いマイルストーンを取得
+  const closestStatus = statuses
+    .filter((s) => !s.achieved)
+    .sort((a, b) => a.remaining - b.remaining)[0] ?? null;
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -37,7 +42,9 @@ export default async function MilestonesPage() {
               記録カウントダウン
             </h1>
             <p className="mt-1 text-sm text-white/70">
-              大谷翔平 — 通算マイルストーンまで残り X
+              {closestStatus
+                ? `大谷翔平 — ${closestStatus.def.label}まで残り ${closestStatus.remaining.toLocaleString()}`
+                : "大谷翔平 — 通算マイルストーン"}
             </p>
           </div>
         </div>

@@ -24,7 +24,7 @@ function MilestoneCard({
   status: MilestoneStatus;
   currentYear: number;
 }) {
-  const { def, current, remaining, achieved, projectedYear, pacePerGame } = status;
+  const { def, current, remaining, achieved, projectedYear, pacePerGame, gamesPlayed } = status;
   const progress = Math.min(100, (current / def.milestone) * 100);
 
   if (achieved) {
@@ -130,7 +130,9 @@ function MilestoneCard({
           </div>
         ) : (
           <p className="text-xs text-gray-400 dark:text-gray-500">
-            ペースデータなし（シーズン開始前）
+            {gamesPlayed === 0
+              ? "ペースデータなし（シーズン開始前）"
+              : "データ蓄積中（10試合以上で予測表示）"}
           </p>
         )}
       </div>
