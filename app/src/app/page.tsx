@@ -1,7 +1,7 @@
 import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, getGameLogBatting, getGameLogPitching, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import { calcAdvancedBatting, calcAdvancedPitching, getCurrentWARDisplay, buildCareerWARChartData, buildScrapedWARDisplay } from "@/lib/sabermetrics";
 import { getCurrentSeasonWAR } from "@/lib/war-source";
-import { fetchSeasonProjection } from "@/lib/season-projection";
+import type { ProjectionData } from "@/lib/season-projection";
 import StatCard from "@/components/StatCard";
 import HrChart from "@/components/HrChart";
 import PitchingChart from "@/components/PitchingChart";
@@ -20,15 +20,17 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const currentYear = new Date().getFullYear();
-  const [player, current, allStats, battingLog, pitchingLog, warResult, projection] = await Promise.all([
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const [player, current, allStats, battingLog, pitchingLog, warResult, projectionRes] = await Promise.all([
     getPlayerInfo(),
     getCurrentSeasonStats(),
     getYearByYearStats(),
     getGameLogBatting(currentYear, "R"),
     getGameLogPitching(currentYear, "R"),
     getCurrentSeasonWAR(currentYear),
-    fetchSeasonProjection(),
+    fetch(`${siteUrl}/api/season-projection`, { next: { revalidate: 3600 } }),
   ]);
+  const projection: ProjectionData = await projectionRes.json();
 
   return (
     <div className="space-y-8">

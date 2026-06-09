@@ -36,8 +36,12 @@ function CountStatCard({ label, current, projected, careerBestKey }: CountStatCa
         <span className="text-base font-bold text-gray-900 dark:text-white">
           {projected}
           {isBest && (
-            <span className="ml-0.5 text-orange-500" title="自己最高ペース">
-              {" "}
+            <span
+              className="ml-0.5 text-orange-500"
+              aria-label="自己最高ペース"
+              title="自己最高ペース"
+            >
+              ★
             </span>
           )}
         </span>

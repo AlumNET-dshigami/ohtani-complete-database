@@ -3,7 +3,7 @@ const OHTANI_PLAYER_ID = 660271;
 
 // 2026 season constants
 const SEASON_GAMES = 162;
-const PROJECTED_STARTS = 28; // ~隔週ローテ想定
+const PROJECTED_STARTS = 28; // 2026年シーズン想定（隔週ローテ〜通常ローテ移行期）。シーズン進行に応じて更新
 
 // 大谷の自己最高記録（予測値超え判定に使用）
 export const CAREER_BESTS = {
@@ -51,6 +51,7 @@ function getConfidence(gamesPlayed: number): ConfidenceLevel {
   return "ほぼ確定";
 }
 
+// 2026-06-09 時点の実績値（MLB Stats API 応答なし時のフォールバック用。更新時は日付を変えること）
 const FALLBACK: ProjectionData = {
   gamesPlayed: 64,
   battingAvg: ".302",
