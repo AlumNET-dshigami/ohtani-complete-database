@@ -1,6 +1,7 @@
 import { getPlayerInfo, getCurrentSeasonStats, getYearByYearStats, getGameLogBatting, getGameLogPitching, OHTANI_HEADSHOT_URL } from "@/lib/mlb-api";
 import { calcAdvancedBatting, calcAdvancedPitching, getCurrentWARDisplay, buildCareerWARChartData, buildScrapedWARDisplay } from "@/lib/sabermetrics";
 import { getCurrentSeasonWAR } from "@/lib/war-source";
+import { fetchSeasonProjection } from "@/lib/season-projection";
 import StatCard from "@/components/StatCard";
 import HrChart from "@/components/HrChart";
 import PitchingChart from "@/components/PitchingChart";
@@ -13,18 +14,20 @@ import AdvancedStats from "@/components/AdvancedStats";
 import JapaneseVideoLinks from "@/components/JapaneseVideoLinks";
 import RakutenGoods from "@/components/RakutenGoods";
 import TwoWayGauge from "@/components/TwoWayGauge";
+import SeasonProjection from "@/components/SeasonProjection";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const currentYear = new Date().getFullYear();
-  const [player, current, allStats, battingLog, pitchingLog, warResult] = await Promise.all([
+  const [player, current, allStats, battingLog, pitchingLog, warResult, projection] = await Promise.all([
     getPlayerInfo(),
     getCurrentSeasonStats(),
     getYearByYearStats(),
     getGameLogBatting(currentYear, "R"),
     getGameLogPitching(currentYear, "R"),
     getCurrentSeasonWAR(currentYear),
+    fetchSeasonProjection(),
   ]);
 
   return (
@@ -104,6 +107,9 @@ export default async function DashboardPage() {
           </div>
         </section>
       )}
+
+      {/* Season Projection */}
+      <SeasonProjection data={projection} />
 
       {/* Two-Way Gauge */}
       {current?.batting && current?.pitching && (
