@@ -1,46 +1,46 @@
 {
   "season": 2026,
-  "generatedAt": "2026-06-10T15:00:24.210Z",
-  "totalPitches": 1029,
+  "generatedAt": "2026-06-11T15:41:52.693Z",
+  "totalPitches": 1131,
   "pitches": {
     "FF": {
-      "pfx_x_avg": -4.93,
-      "pfx_z_avg": 14.42,
-      "speed_avg": 97.7,
-      "spin_avg": 2489,
-      "count": 456,
+      "pfx_x_avg": -4.73,
+      "pfx_z_avg": 14.17,
+      "speed_avg": 97.8,
+      "spin_avg": 2486,
+      "count": 507,
       "label": "4シーム"
     },
     "ST": {
-      "pfx_x_avg": 15.05,
-      "pfx_z_avg": 3.77,
-      "speed_avg": 84.5,
-      "spin_avg": 2713,
-      "count": 302,
+      "pfx_x_avg": 15.06,
+      "pfx_z_avg": 3.59,
+      "speed_avg": 84.6,
+      "spin_avg": 2712,
+      "count": 340,
       "label": "スウィーパー"
     },
-    "CU": {
-      "pfx_x_avg": 13.14,
-      "pfx_z_avg": -14.94,
-      "speed_avg": 74.9,
-      "spin_avg": 2646,
-      "count": 112,
-      "label": "カーブ"
-    },
     "FS": {
-      "pfx_x_avg": -12.64,
-      "pfx_z_avg": 2.29,
-      "speed_avg": 88.4,
-      "spin_avg": 1546,
-      "count": 93,
+      "pfx_x_avg": -12.53,
+      "pfx_z_avg": 2.41,
+      "speed_avg": 88.5,
+      "spin_avg": 1542,
+      "count": 97,
       "label": "スプリット"
     },
+    "CU": {
+      "pfx_x_avg": 13.18,
+      "pfx_z_avg": -14.79,
+      "speed_avg": 75,
+      "spin_avg": 2645,
+      "count": 120,
+      "label": "カーブ"
+    },
     "SI": {
-      "pfx_x_avg": -14.87,
-      "pfx_z_avg": 6.53,
+      "pfx_x_avg": -14.86,
+      "pfx_z_avg": 6.57,
       "speed_avg": 95.5,
-      "spin_avg": 2189,
-      "count": 50,
+      "spin_avg": 2188,
+      "count": 51,
       "label": "シンカー"
     },
     "FC": {
