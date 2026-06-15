@@ -459,6 +459,29 @@
         "rank": 18,
         "value": 73
       }
+    },
+    {
+      "date": "2026-06-15",
+      "homeRuns": {
+        "rank": 13,
+        "value": 14
+      },
+      "runsBattedIn": {
+        "rank": 18,
+        "value": 41
+      },
+      "battingAverage": {
+        "rank": 7,
+        "value": 0.302
+      },
+      "earnedRunAverage": {
+        "rank": null,
+        "value": null
+      },
+      "strikeouts": {
+        "rank": 18,
+        "value": 73
+      }
     }
   ]
 }
