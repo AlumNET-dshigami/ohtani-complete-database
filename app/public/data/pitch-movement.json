@@ -1,46 +1,54 @@
 {
   "season": 2026,
-  "generatedAt": "2026-06-17T14:57:56.001Z",
-  "totalPitches": 1131,
+  "generatedAt": "2026-06-18T14:53:11.781Z",
+  "totalPitches": 1222,
   "pitches": {
     "FF": {
-      "pfx_x_avg": -4.73,
-      "pfx_z_avg": 14.17,
+      "pfx_x_avg": -4.86,
+      "pfx_z_avg": 14.08,
       "speed_avg": 97.8,
-      "spin_avg": 2486,
-      "count": 507,
+      "spin_avg": 2478,
+      "count": 555,
       "label": "4シーム"
     },
-    "ST": {
-      "pfx_x_avg": 15.06,
-      "pfx_z_avg": 3.59,
-      "speed_avg": 84.6,
-      "spin_avg": 2712,
-      "count": 340,
-      "label": "スウィーパー"
-    },
     "FS": {
-      "pfx_x_avg": -12.53,
-      "pfx_z_avg": 2.41,
-      "speed_avg": 88.5,
-      "spin_avg": 1542,
-      "count": 97,
+      "pfx_x_avg": -12.39,
+      "pfx_z_avg": 2.19,
+      "speed_avg": 88.6,
+      "spin_avg": 1549,
+      "count": 106,
       "label": "スプリット"
     },
+    "ST": {
+      "pfx_x_avg": 15,
+      "pfx_z_avg": 3.54,
+      "speed_avg": 84.6,
+      "spin_avg": 2710,
+      "count": 350,
+      "label": "スウィーパー"
+    },
     "CU": {
-      "pfx_x_avg": 13.18,
-      "pfx_z_avg": -14.79,
-      "speed_avg": 75,
-      "spin_avg": 2645,
-      "count": 120,
+      "pfx_x_avg": 13.12,
+      "pfx_z_avg": -14.83,
+      "speed_avg": 75.2,
+      "spin_avg": 2647,
+      "count": 138,
       "label": "カーブ"
     },
+    "SL": {
+      "pfx_x_avg": 3.85,
+      "pfx_z_avg": -1,
+      "speed_avg": 87.8,
+      "spin_avg": 2591,
+      "count": 14,
+      "label": "スライダー"
+    },
     "SI": {
-      "pfx_x_avg": -14.86,
-      "pfx_z_avg": 6.57,
+      "pfx_x_avg": -14.94,
+      "pfx_z_avg": 6.42,
       "speed_avg": 95.5,
-      "spin_avg": 2188,
-      "count": 51,
+      "spin_avg": 2177,
+      "count": 52,
       "label": "シンカー"
     },
     "FC": {
@@ -50,14 +58,6 @@
       "spin_avg": 2328,
       "count": 7,
       "label": "カット"
-    },
-    "SL": {
-      "pfx_x_avg": 4,
-      "pfx_z_avg": -1.35,
-      "speed_avg": 87.4,
-      "spin_avg": 2620,
-      "count": 9,
-      "label": "スライダー"
     }
   }
 }
