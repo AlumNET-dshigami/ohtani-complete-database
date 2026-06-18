@@ -4,8 +4,10 @@ import { getBattingLeaders, getPitchingLeaders, getTitleRaces } from "@/lib/rank
 import type { LeaderCategory, LeagueScope, TitleRace, TitleSnapshots } from "@/lib/rankings-api";
 import { fetchWARRanking, type WARRankingResult, type WARScope } from "@/lib/war-scraper";
 import { getCurrentSeasonWAR } from "@/lib/war-source";
+import { fetchCyYoungRace, fetchHankAaronRace, fetchMVPRace } from "@/lib/award-model";
 import TitleRaceDashboard from "@/components/TitleRaceDashboard";
 import WARRankingDashboard from "@/components/WARRankingDashboard";
+import AwardRaceCard from "@/components/AwardRaceCard";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +133,9 @@ export default async function RankingsPage() {
     warAl,
     warResult,
     titleSnapshots,
+    cyYoung,
+    hankAaron,
+    mvp,
   ] = await Promise.all([
     getBattingLeaders(currentYear),
     getPitchingLeaders(currentYear),
@@ -142,6 +147,9 @@ export default async function RankingsPage() {
     fetchWARRanking(currentYear, "AL"),
     getCurrentSeasonWAR(currentYear),
     loadTitleSnapshots(),
+    fetchCyYoungRace(),
+    fetchHankAaronRace(),
+    fetchMVPRace(),
   ]);
 
   const byScope: Record<LeagueScope, TitleRace[]> = {
@@ -208,6 +216,21 @@ export default async function RankingsPage() {
           sourceUrl={warSnap.sourceUrl}
           sourceUpdatedAt={warSnap.sourceUpdatedAt}
         />
+      </section>
+
+      {/* アワードレース */}
+      <section>
+        <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-white">
+          🏅 アワードレース予測
+        </h2>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          独自スコアリングモデルによる NL 各賞の有力候補ランキング（大谷翔平を強調）
+        </p>
+        <div className="grid gap-6 lg:grid-cols-3">
+          {cyYoung.candidates.length > 0 && <AwardRaceCard race={cyYoung} />}
+          {hankAaron.candidates.length > 0 && <AwardRaceCard race={hankAaron} />}
+          {mvp.candidates.length > 0 && <AwardRaceCard race={mvp} />}
+        </div>
       </section>
 
       {/* 従来の指標別リーダーボード（補助） */}
