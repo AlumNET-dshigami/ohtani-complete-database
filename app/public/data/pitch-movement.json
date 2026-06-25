@@ -1,63 +1,63 @@
 {
   "season": 2026,
-  "generatedAt": "2026-06-24T14:12:29.509Z",
-  "totalPitches": 1222,
+  "generatedAt": "2026-06-25T14:10:08.812Z",
+  "totalPitches": 1311,
   "pitches": {
     "FF": {
-      "pfx_x_avg": -4.86,
-      "pfx_z_avg": 14.08,
-      "speed_avg": 97.8,
-      "spin_avg": 2478,
-      "count": 555,
+      "pfx_x_avg": -4.89,
+      "pfx_z_avg": 14.03,
+      "speed_avg": 97.9,
+      "spin_avg": 2482,
+      "count": 586,
       "label": "4シーム"
     },
-    "FS": {
-      "pfx_x_avg": -12.39,
-      "pfx_z_avg": 2.19,
-      "speed_avg": 88.6,
-      "spin_avg": 1549,
-      "count": 106,
-      "label": "スプリット"
-    },
     "ST": {
-      "pfx_x_avg": 15,
-      "pfx_z_avg": 3.54,
-      "speed_avg": 84.6,
-      "spin_avg": 2710,
-      "count": 350,
+      "pfx_x_avg": 14.96,
+      "pfx_z_avg": 3.45,
+      "speed_avg": 84.8,
+      "spin_avg": 2717,
+      "count": 377,
       "label": "スウィーパー"
     },
-    "CU": {
-      "pfx_x_avg": 13.12,
-      "pfx_z_avg": -14.83,
-      "speed_avg": 75.2,
-      "spin_avg": 2647,
-      "count": 138,
-      "label": "カーブ"
-    },
-    "SL": {
-      "pfx_x_avg": 3.85,
-      "pfx_z_avg": -1,
-      "speed_avg": 87.8,
-      "spin_avg": 2591,
-      "count": 14,
-      "label": "スライダー"
-    },
     "SI": {
-      "pfx_x_avg": -14.94,
-      "pfx_z_avg": 6.42,
-      "speed_avg": 95.5,
-      "spin_avg": 2177,
-      "count": 52,
+      "pfx_x_avg": -14.74,
+      "pfx_z_avg": 6.19,
+      "speed_avg": 96.1,
+      "spin_avg": 2204,
+      "count": 64,
       "label": "シンカー"
     },
+    "CU": {
+      "pfx_x_avg": 13.13,
+      "pfx_z_avg": -14.82,
+      "speed_avg": 75.3,
+      "spin_avg": 2649,
+      "count": 144,
+      "label": "カーブ"
+    },
     "FC": {
-      "pfx_x_avg": -2.07,
-      "pfx_z_avg": 12.69,
-      "speed_avg": 91.9,
-      "spin_avg": 2328,
-      "count": 7,
+      "pfx_x_avg": -0.73,
+      "pfx_z_avg": 10.91,
+      "speed_avg": 92.4,
+      "spin_avg": 2376,
+      "count": 9,
       "label": "カット"
+    },
+    "FS": {
+      "pfx_x_avg": -12.48,
+      "pfx_z_avg": 2.02,
+      "speed_avg": 88.8,
+      "spin_avg": 1557,
+      "count": 116,
+      "label": "スプリット"
+    },
+    "SL": {
+      "pfx_x_avg": 3.78,
+      "pfx_z_avg": -0.8,
+      "speed_avg": 88,
+      "spin_avg": 2593,
+      "count": 15,
+      "label": "スライダー"
     }
   }
 }
