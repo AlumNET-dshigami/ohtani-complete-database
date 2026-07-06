@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-05T13:16:01.635Z",
+  "fetchedAt": "2026-07-06T15:17:06.086Z",
   "season": 2026,
   "zones": {
     "1": {
@@ -10,10 +10,10 @@
       "barrels": 1
     },
     "2": {
-      "xwoba": 0.181,
-      "barrelRate": 0.042,
-      "pitches": 76,
-      "battedBalls": 24,
+      "xwoba": 0.202,
+      "barrelRate": 0.04,
+      "pitches": 77,
+      "battedBalls": 25,
       "barrels": 1
     },
     "3": {
@@ -26,35 +26,35 @@
     "4": {
       "xwoba": 0.358,
       "barrelRate": 0.148,
-      "pitches": 98,
+      "pitches": 100,
       "battedBalls": 27,
       "barrels": 4
     },
     "5": {
-      "xwoba": 0.561,
+      "xwoba": 0.543,
       "barrelRate": 0.308,
-      "pitches": 87,
+      "pitches": 88,
       "battedBalls": 26,
       "barrels": 8
     },
     "6": {
       "xwoba": 0.592,
       "barrelRate": 0.333,
-      "pitches": 49,
+      "pitches": 50,
       "battedBalls": 18,
       "barrels": 6
     },
     "7": {
       "xwoba": 0.238,
       "barrelRate": 0,
-      "pitches": 91,
+      "pitches": 92,
       "battedBalls": 17,
       "barrels": 0
     },
     "8": {
       "xwoba": 0.578,
       "barrelRate": 0.208,
-      "pitches": 84,
+      "pitches": 85,
       "battedBalls": 24,
       "barrels": 5
     },
@@ -68,28 +68,28 @@
     "11": {
       "xwoba": 0.495,
       "barrelRate": 0,
-      "pitches": 181,
+      "pitches": 185,
       "battedBalls": 10,
       "barrels": 0
     },
     "12": {
       "xwoba": 0.309,
       "barrelRate": 0,
-      "pitches": 94,
+      "pitches": 96,
       "battedBalls": 8,
       "barrels": 0
     },
     "13": {
-      "xwoba": 0.365,
-      "barrelRate": 0.053,
-      "pitches": 274,
-      "battedBalls": 19,
+      "xwoba": 0.357,
+      "barrelRate": 0.05,
+      "pitches": 280,
+      "battedBalls": 20,
       "barrels": 1
     },
     "14": {
-      "xwoba": 0.419,
+      "xwoba": 0.424,
       "barrelRate": 0.174,
-      "pitches": 223,
+      "pitches": 225,
       "battedBalls": 23,
       "barrels": 4
     }
