@@ -1,11 +1,11 @@
 {
-  "fetchedAt": "2026-07-07T14:13:35.744Z",
+  "fetchedAt": "2026-07-08T13:47:09.980Z",
   "season": 2026,
   "zones": {
     "1": {
-      "xwoba": 0.409,
+      "xwoba": 0.358,
       "barrelRate": 0.2,
-      "pitches": 57,
+      "pitches": 59,
       "battedBalls": 5,
       "barrels": 1
     },
@@ -19,23 +19,23 @@
     "3": {
       "xwoba": 0.782,
       "barrelRate": 0.375,
-      "pitches": 45,
+      "pitches": 46,
       "battedBalls": 8,
       "barrels": 3
     },
     "4": {
-      "xwoba": 0.358,
-      "barrelRate": 0.148,
-      "pitches": 100,
-      "battedBalls": 27,
+      "xwoba": 0.349,
+      "barrelRate": 0.143,
+      "pitches": 101,
+      "battedBalls": 28,
       "barrels": 4
     },
     "5": {
-      "xwoba": 0.602,
-      "barrelRate": 0.357,
-      "pitches": 92,
-      "battedBalls": 28,
-      "barrels": 10
+      "xwoba": 0.627,
+      "barrelRate": 0.379,
+      "pitches": 93,
+      "battedBalls": 29,
+      "barrels": 11
     },
     "6": {
       "xwoba": 0.592,
@@ -54,42 +54,42 @@
     "8": {
       "xwoba": 0.578,
       "barrelRate": 0.208,
-      "pitches": 85,
+      "pitches": 87,
       "battedBalls": 24,
       "barrels": 5
     },
     "9": {
       "xwoba": 0.35,
       "barrelRate": 0.083,
-      "pitches": 60,
+      "pitches": 61,
       "battedBalls": 12,
       "barrels": 1
     },
     "11": {
       "xwoba": 0.495,
       "barrelRate": 0,
-      "pitches": 185,
+      "pitches": 186,
       "battedBalls": 10,
       "barrels": 0
     },
     "12": {
-      "xwoba": 0.309,
+      "xwoba": 0.296,
       "barrelRate": 0,
-      "pitches": 96,
-      "battedBalls": 8,
+      "pitches": 99,
+      "battedBalls": 9,
       "barrels": 0
     },
     "13": {
       "xwoba": 0.357,
       "barrelRate": 0.05,
-      "pitches": 282,
+      "pitches": 284,
       "battedBalls": 20,
       "barrels": 1
     },
     "14": {
-      "xwoba": 0.42,
+      "xwoba": 0.425,
       "barrelRate": 0.16,
-      "pitches": 227,
+      "pitches": 231,
       "battedBalls": 25,
       "barrels": 4
     }
