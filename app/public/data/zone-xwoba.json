@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-09T14:39:31.933Z",
+  "fetchedAt": "2026-07-10T14:05:48.070Z",
   "season": 2026,
   "zones": {
     "1": {
@@ -80,7 +80,7 @@
       "barrels": 0
     },
     "13": {
-      "xwoba": 0.358,
+      "xwoba": 0.357,
       "barrelRate": 0.05,
       "pitches": 284,
       "battedBalls": 20,
