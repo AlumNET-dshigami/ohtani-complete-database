@@ -1,11 +1,11 @@
 {
-  "fetchedAt": "2026-07-19T13:00:25.294Z",
+  "fetchedAt": "2026-07-20T13:52:18.861Z",
   "season": 2026,
   "zones": {
     "1": {
-      "xwoba": 0.358,
+      "xwoba": 0.318,
       "barrelRate": 0.2,
-      "pitches": 62,
+      "pitches": 64,
       "battedBalls": 5,
       "barrels": 1
     },
@@ -26,14 +26,14 @@
     "4": {
       "xwoba": 0.344,
       "barrelRate": 0.138,
-      "pitches": 104,
+      "pitches": 105,
       "battedBalls": 29,
       "barrels": 4
     },
     "5": {
       "xwoba": 0.665,
       "barrelRate": 0.406,
-      "pitches": 98,
+      "pitches": 100,
       "battedBalls": 32,
       "barrels": 13
     },
@@ -45,30 +45,30 @@
       "barrels": 6
     },
     "7": {
-      "xwoba": 0.238,
+      "xwoba": 0.23,
       "barrelRate": 0,
-      "pitches": 93,
-      "battedBalls": 17,
+      "pitches": 97,
+      "battedBalls": 19,
       "barrels": 0
     },
     "8": {
-      "xwoba": 0.562,
-      "barrelRate": 0.2,
-      "pitches": 90,
-      "battedBalls": 25,
+      "xwoba": 0.533,
+      "barrelRate": 0.179,
+      "pitches": 95,
+      "battedBalls": 28,
       "barrels": 5
     },
     "9": {
-      "xwoba": 0.35,
-      "barrelRate": 0.083,
-      "pitches": 62,
-      "battedBalls": 12,
-      "barrels": 1
+      "xwoba": 0.404,
+      "barrelRate": 0.154,
+      "pitches": 63,
+      "battedBalls": 13,
+      "barrels": 2
     },
     "11": {
       "xwoba": 0.511,
       "barrelRate": 0,
-      "pitches": 194,
+      "pitches": 199,
       "battedBalls": 11,
       "barrels": 0
     },
@@ -80,17 +80,17 @@
       "barrels": 0
     },
     "13": {
-      "xwoba": 0.348,
+      "xwoba": 0.342,
       "barrelRate": 0.048,
-      "pitches": 295,
+      "pitches": 300,
       "battedBalls": 21,
       "barrels": 1
     },
     "14": {
-      "xwoba": 0.439,
-      "barrelRate": 0.192,
-      "pitches": 244,
-      "battedBalls": 26,
+      "xwoba": 0.438,
+      "barrelRate": 0.185,
+      "pitches": 247,
+      "battedBalls": 27,
       "barrels": 5
     }
   }
