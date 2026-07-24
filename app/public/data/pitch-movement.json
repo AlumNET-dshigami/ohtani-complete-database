@@ -1,14 +1,14 @@
 {
   "season": 2026,
-  "generatedAt": "2026-07-23T13:39:18.371Z",
+  "generatedAt": "2026-07-24T13:22:12.137Z",
   "totalPitches": 1421,
   "pitches": {
     "FF": {
-      "pfx_x_avg": -5.02,
+      "pfx_x_avg": -5.01,
       "pfx_z_avg": 14.01,
       "speed_avg": 98,
-      "spin_avg": 2484,
-      "count": 634,
+      "spin_avg": 2486,
+      "count": 633,
       "label": "4シーム"
     },
     "ST": {
@@ -20,11 +20,11 @@
       "label": "スウィーパー"
     },
     "SI": {
-      "pfx_x_avg": -14.3,
-      "pfx_z_avg": 6.19,
-      "speed_avg": 96.3,
-      "spin_avg": 2212,
-      "count": 82,
+      "pfx_x_avg": -14.25,
+      "pfx_z_avg": 6.24,
+      "speed_avg": 96.2,
+      "spin_avg": 2201,
+      "count": 83,
       "label": "シンカー"
     },
     "CU": {
