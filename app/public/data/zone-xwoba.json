@@ -1,12 +1,12 @@
 {
-  "fetchedAt": "2026-08-30T15:49:36.746Z",
+  "fetchedAt": "2026-08-31T18:33:30.113Z",
   "season": 2026,
   "zones": {
     "1": {
-      "xwoba": 0.317,
-      "barrelRate": 0.143,
-      "pitches": 82,
-      "battedBalls": 7,
+      "xwoba": 0.307,
+      "barrelRate": 0.125,
+      "pitches": 83,
+      "battedBalls": 8,
       "barrels": 1
     },
     "2": {
@@ -17,31 +17,31 @@
       "barrels": 4
     },
     "3": {
-      "xwoba": 0.616,
+      "xwoba": 0.578,
       "barrelRate": 0.25,
-      "pitches": 63,
+      "pitches": 65,
       "battedBalls": 12,
       "barrels": 3
     },
     "4": {
-      "xwoba": 0.383,
+      "xwoba": 0.384,
       "barrelRate": 0.189,
-      "pitches": 144,
+      "pitches": 145,
       "battedBalls": 37,
       "barrels": 7
     },
     "5": {
       "xwoba": 0.634,
       "barrelRate": 0.333,
-      "pitches": 142,
+      "pitches": 143,
       "battedBalls": 45,
       "barrels": 15
     },
     "6": {
-      "xwoba": 0.523,
-      "barrelRate": 0.25,
-      "pitches": 76,
-      "battedBalls": 28,
+      "xwoba": 0.531,
+      "barrelRate": 0.241,
+      "pitches": 77,
+      "battedBalls": 29,
       "barrels": 7
     },
     "7": {
@@ -52,44 +52,44 @@
       "barrels": 1
     },
     "8": {
-      "xwoba": 0.488,
+      "xwoba": 0.477,
       "barrelRate": 0.143,
-      "pitches": 133,
+      "pitches": 136,
       "battedBalls": 42,
       "barrels": 6
     },
     "9": {
-      "xwoba": 0.422,
-      "barrelRate": 0.211,
-      "pitches": 92,
-      "battedBalls": 19,
+      "xwoba": 0.419,
+      "barrelRate": 0.2,
+      "pitches": 95,
+      "battedBalls": 20,
       "barrels": 4
     },
     "11": {
       "xwoba": 0.496,
       "barrelRate": 0.053,
-      "pitches": 274,
+      "pitches": 276,
       "battedBalls": 19,
       "barrels": 1
     },
     "12": {
       "xwoba": 0.29,
       "barrelRate": 0,
-      "pitches": 150,
+      "pitches": 153,
       "battedBalls": 14,
       "barrels": 0
     },
     "13": {
       "xwoba": 0.305,
       "barrelRate": 0.033,
-      "pitches": 424,
+      "pitches": 430,
       "battedBalls": 30,
       "barrels": 1
     },
     "14": {
       "xwoba": 0.373,
       "barrelRate": 0.152,
-      "pitches": 311,
+      "pitches": 312,
       "battedBalls": 33,
       "barrels": 5
     }
