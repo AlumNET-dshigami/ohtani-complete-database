@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-04T16:15:23.613Z",
+  "fetchedAt": "2026-10-06T17:42:06.722Z",
   "season": 2026,
   "zones": {
     "1": {
@@ -10,10 +10,10 @@
       "barrels": 2
     },
     "2": {
-      "xwoba": 0.264,
-      "barrelRate": 0.121,
-      "pitches": 119,
-      "battedBalls": 33,
+      "xwoba": 0.262,
+      "barrelRate": 0.118,
+      "pitches": 120,
+      "battedBalls": 34,
       "barrels": 4
     },
     "3": {
@@ -26,14 +26,14 @@
     "4": {
       "xwoba": 0.383,
       "barrelRate": 0.211,
-      "pitches": 152,
+      "pitches": 153,
       "battedBalls": 38,
       "barrels": 8
     },
     "5": {
       "xwoba": 0.636,
       "barrelRate": 0.319,
-      "pitches": 154,
+      "pitches": 155,
       "battedBalls": 47,
       "barrels": 15
     },
@@ -54,7 +54,7 @@
     "8": {
       "xwoba": 0.473,
       "barrelRate": 0.156,
-      "pitches": 146,
+      "pitches": 147,
       "battedBalls": 45,
       "barrels": 7
     },
@@ -66,30 +66,30 @@
       "barrels": 4
     },
     "11": {
-      "xwoba": 0.505,
-      "barrelRate": 0.1,
-      "pitches": 296,
-      "battedBalls": 20,
+      "xwoba": 0.493,
+      "barrelRate": 0.095,
+      "pitches": 298,
+      "battedBalls": 21,
       "barrels": 2
     },
     "12": {
-      "xwoba": 0.316,
+      "xwoba": 0.308,
       "barrelRate": 0,
-      "pitches": 163,
+      "pitches": 164,
       "battedBalls": 14,
       "barrels": 0
     },
     "13": {
-      "xwoba": 0.314,
+      "xwoba": 0.31,
       "barrelRate": 0.03,
-      "pitches": 461,
+      "pitches": 471,
       "battedBalls": 33,
       "barrels": 1
     },
     "14": {
       "xwoba": 0.354,
       "barrelRate": 0.143,
-      "pitches": 335,
+      "pitches": 337,
       "battedBalls": 35,
       "barrels": 5
     }
