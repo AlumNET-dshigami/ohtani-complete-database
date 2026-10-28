@@ -1,29 +1,6 @@
 {
   "snapshots": [
     {
-      "date": "2026-07-29",
-      "homeRuns": {
-        "rank": 6,
-        "value": 23
-      },
-      "runsBattedIn": {
-        "rank": 10,
-        "value": 64
-      },
-      "battingAverage": {
-        "rank": 12,
-        "value": 0.286
-      },
-      "earnedRunAverage": {
-        "rank": null,
-        "value": null
-      },
-      "strikeouts": {
-        "rank": 28,
-        "value": 95
-      }
-    },
-    {
       "date": "2026-07-30",
       "homeRuns": {
         "rank": 7,
@@ -2049,6 +2026,29 @@
     },
     {
       "date": "2026-10-27",
+      "homeRuns": {
+        "rank": 9,
+        "value": 30
+      },
+      "runsBattedIn": {
+        "rank": 27,
+        "value": 81
+      },
+      "battingAverage": {
+        "rank": 19,
+        "value": 0.275
+      },
+      "earnedRunAverage": {
+        "rank": null,
+        "value": null
+      },
+      "strikeouts": {
+        "rank": 67,
+        "value": 95
+      }
+    },
+    {
+      "date": "2026-10-28",
       "homeRuns": {
         "rank": 9,
         "value": 30
