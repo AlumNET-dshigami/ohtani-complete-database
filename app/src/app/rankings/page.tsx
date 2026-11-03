@@ -3,7 +3,7 @@ import { join } from "path";
 import { getBattingLeaders, getPitchingLeaders, getTitleRaces } from "@/lib/rankings-api";
 import type { LeaderCategory, LeagueScope, TitleRace, TitleSnapshots } from "@/lib/rankings-api";
 import { fetchWARRanking, type WARRankingResult, type WARScope } from "@/lib/war-scraper";
-import { getCurrentSeasonWAR } from "@/lib/war-source";
+import { applyFinalFWARToRanking, getCurrentSeasonWAR } from "@/lib/war-source";
 import { fetchCyYoungRace, fetchHankAaronRace, fetchMVPRace } from "@/lib/award-model";
 import TitleRaceDashboard from "@/components/TitleRaceDashboard";
 import WARRankingDashboard from "@/components/WARRankingDashboard";
@@ -159,9 +159,9 @@ export default async function RankingsPage() {
   };
 
   const warByScope: Partial<Record<WARScope, WARRankingResult>> = {
-    MLB: warMlb,
-    NL: warNl,
-    AL: warAl,
+    MLB: applyFinalFWARToRanking(warMlb, currentYear),
+    NL: applyFinalFWARToRanking(warNl, currentYear),
+    AL: applyFinalFWARToRanking(warAl, currentYear),
   };
 
   const warSnap = warResult.snapshot;

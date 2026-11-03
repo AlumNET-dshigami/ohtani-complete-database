@@ -1,10 +1,10 @@
 {
   "year": 2026,
   "fetchedAt": "2026-04-29T23:15:22.972Z",
-  "sourceUpdatedAt": "2026-04-29",
-  "batting": { "fWAR": 0.92, "rWAR": 0.91 },
-  "pitching": { "fWAR": 1.31, "rWAR": 1.29 },
-  "total": { "fWAR": 2.22, "rWAR": 2.20 },
+  "sourceUpdatedAt": "2026-11-03",
+  "batting": { "fWAR": 3.70, "rWAR": 0.91 },
+  "pitching": { "fWAR": 2.90, "rWAR": 1.29 },
+  "total": { "fWAR": 6.60, "rWAR": 2.20 },
   "extras": { "ops": ".898", "era": "0.60", "hr": null, "wins": 2 },
-  "sourceUrl": "https://nobita-retire.com/2026-mlb-war/"
+  "sourceUrl": "https://www.fangraphs.com/leaders/major-league?season=2026&season1=2026&type=8"
 }
