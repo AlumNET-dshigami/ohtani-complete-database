@@ -6,8 +6,8 @@ export const SEASON_GAMES = 162;
 
 // Ohtani's career bests (used to flag a season that beats a personal record)
 export const CAREER_BESTS = {
-  homeRuns: 44,    // 2023
-  rbi: 95,         // 2023
+  homeRuns: 55,    // 2025
+  rbi: 130,        // 2024
   strikeOuts: 219, // 2021 (奪三振)
   ops: 1.066,      // 2021
   wins: 15,        // 2021
