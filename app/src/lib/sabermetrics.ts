@@ -32,14 +32,15 @@ export function calcAdvancedBatting(s: BattingStats): AdvancedBattingStats {
   const doubles = s.doubles || 0;
   const triples = s.triples || 0;
 
-  // PA approximation (AB + BB + HBP assumed 0 + SF assumed 0)
-  const pa = ab + bb;
+  // PA: use the API's exact plate appearances; fall back to an approximation
+  const pa = s.plateAppearances ?? ab + bb;
+  const sf = s.sacFlies ?? 0;
 
   // ISO: Isolated Power = SLG - AVG
   const iso = slg - avg;
 
-  // BABIP: (H - HR) / (AB - SO - HR + SF) — SF unknown, approximate
-  const babipDenom = ab - so - hr;
+  // BABIP: (H - HR) / (AB - SO - HR + SF)
+  const babipDenom = ab - so - hr + sf;
   const babip = babipDenom > 0 ? (h - hr) / babipDenom : 0;
 
   // BB%: BB / PA
@@ -104,7 +105,9 @@ export interface AdvancedPitchingStats {
 }
 
 export function calcAdvancedPitching(s: PitchingStats): AdvancedPitchingStats {
-  const ip = parseFloat(s.inningsPitched) || 0;
+  // Baseball notation: "85.2" means 85 and 2/3 innings, not 85.2
+  const [ipWhole, ipOuts] = (s.inningsPitched || "0").split(".");
+  const ip = (parseInt(ipWhole, 10) || 0) + (parseInt(ipOuts ?? "0", 10) || 0) / 3;
   const so = s.strikeOuts || 0;
   const bb = s.baseOnBalls || 0;
   const hr = s.homeRuns || 0;
@@ -112,8 +115,8 @@ export function calcAdvancedPitching(s: PitchingStats): AdvancedPitchingStats {
   const er = s.earnedRuns || 0;
   const r = s.runs || 0;
 
-  // Batters faced approximation: IP * 3 + H + BB
-  const bf = Math.round(ip * 3) + h + bb;
+  // Batters faced: exact value from the API; fall back to IP * 3 + H + BB
+  const bf = s.battersFaced ?? Math.round(ip * 3) + h + bb;
 
   // FIP: ((13*HR + 3*BB - 2*K) / IP) + constant (3.10 is league avg FIP constant)
   const FIP_CONSTANT = 3.10;
@@ -328,8 +331,8 @@ export function buildScrapedWARDisplay(
 ): CurrentWARDisplay {
   const sourceLabel =
     scrapedSource === "live"
-      ? "出典: nobita-retire.com（fWAR=FanGraphs / rWAR=Baseball Reference）"
-      : "出典: nobita-retire.com（手動更新値）";
+      ? "出典: FanGraphs（fWAR）/ Baseball-Reference（rWAR）"
+      : "出典: FanGraphs（fWAR）/ Baseball-Reference（rWAR）（手動更新値）";
 
   return {
     bWAR: fmt(snapshot.total.rWAR),

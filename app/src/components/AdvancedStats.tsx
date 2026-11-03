@@ -7,6 +7,8 @@ interface StatItem {
   value: string;
   desc: string;
   highlight?: boolean;
+  /** true when the value depends on an assumed constant / approximation */
+  estimated?: boolean;
 }
 
 interface AdvancedStatsProps {
@@ -65,6 +67,11 @@ export default function AdvancedStats({ battingStats, pitchingStats }: AdvancedS
           >
             <p className="text-[10px] font-bold uppercase tracking-widest text-dodger-blue">
               {stat.label}
+              {stat.estimated && (
+                <span className="ml-1 rounded bg-amber-100 px-1 py-0.5 text-[9px] font-medium normal-case tracking-normal text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                  参考
+                </span>
+              )}
             </p>
             <p className={`mt-1 text-xl font-bold tabular-nums ${
               stat.highlight ? "gradient-text" : "text-gray-900 dark:text-white"
@@ -82,6 +89,9 @@ export default function AdvancedStats({ battingStats, pitchingStats }: AdvancedS
           </div>
         ))}
       </div>
+      <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500">
+        ※ 「参考」付きの指標（FIP・LOB%）は、MLB Stats APIの実績値から簡易式で算出した推定・参考値です（FIP定数は固定値で、リーグ全体のデータは未使用）。その他はAPIの実績値から算出しています。
+      </p>
     </section>
   );
 }

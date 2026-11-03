@@ -81,6 +81,9 @@ function parseBattingStats(
     obp: (stat.obp as string) ?? ".000",
     slg: (stat.slg as string) ?? ".000",
     ops: (stat.ops as string) ?? ".000",
+    plateAppearances: stat.plateAppearances as number | undefined,
+    hitByPitch: stat.hitByPitch as number | undefined,
+    sacFlies: stat.sacFlies as number | undefined,
   };
 }
 
@@ -108,6 +111,7 @@ function parsePitchingStats(
     strikeOuts: (stat.strikeOuts as number) ?? 0,
     whip: (stat.whip as string) ?? "0.00",
     strikeoutsPer9: (stat.strikeoutsPer9Inn as string) ?? "0.00",
+    battersFaced: stat.battersFaced as number | undefined,
   };
 }
 

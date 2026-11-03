@@ -151,12 +151,16 @@ export default function WARRankingDashboard({
 
       {/* 出典 */}
       <p className="text-center text-[10px] text-gray-400 dark:text-gray-500">
-        出典:{" "}
-        <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-dodger-blue hover:underline">
-          nobita-retire.com
+        出典: fWAR=
+        <a href="https://www.fangraphs.com/leaders/war" target="_blank" rel="noopener noreferrer" className="text-dodger-blue hover:underline">
+          FanGraphs
         </a>
-        （fWAR=FanGraphs / bWAR=Baseball Reference）
-        {sourceUpdatedAt ? ` / 最終更新: ${sourceUpdatedAt}` : ""}
+        {" / bWAR="}
+        <a href="https://www.baseball-reference.com/leagues/majors/2026.shtml" target="_blank" rel="noopener noreferrer" className="text-dodger-blue hover:underline">
+          Baseball-Reference
+        </a>
+        （数値は転記・手更新値）
+        {` / 最終更新: ${sourceUpdatedAt ?? "不明"}`}
         {isManual && <span className="ml-1 text-amber-600 dark:text-amber-400">⚠️ 一部手動更新値</span>}
       </p>
     </div>

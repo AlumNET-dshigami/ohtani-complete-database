@@ -43,10 +43,14 @@ export default function AutoRefresh({ intervalMs = 300000 }: AutoRefreshProps) {
     return () => clearInterval(timer);
   }, [router, intervalMs, isGameDay]);
 
-  const timeStr = lastUpdated.toLocaleTimeString("ja-JP", {
+  const timeStr = `${lastUpdated.toLocaleString("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  });
+  })} JST`;
 
   return (
     <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">

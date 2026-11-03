@@ -15,6 +15,7 @@ import JapaneseVideoLinks from "@/components/JapaneseVideoLinks";
 import RakutenGoods from "@/components/RakutenGoods";
 import TwoWayGauge from "@/components/TwoWayGauge";
 import SeasonProjection from "@/components/SeasonProjection";
+import RetryButton from "@/components/RetryButton";
 
 export const dynamic = "force-dynamic";
 
@@ -117,6 +118,9 @@ export default async function DashboardPage() {
           <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
             二刀流ゲージ — リーグ平均との差
           </h2>
+          <p className="mb-3 text-[10px] text-gray-400 dark:text-gray-500">
+            ※ リーグ平均は固定の参考値（推定）です。大谷選手の成績はMLB Stats APIの実績値を使用しています。
+          </p>
           <TwoWayGauge
             hitting={{
               obp: current.batting.obp,
@@ -156,7 +160,7 @@ export default async function DashboardPage() {
         ];
 
         const pitchingStats = [
-          { label: "FIP", value: advPit.fip, desc: "Fielding Independent Pitching。守備に依存しない投球力。ERAより真の実力を反映", highlight: true },
+          { label: "FIP", value: advPit.fip, desc: "Fielding Independent Pitching。守備に依存しない投球力。ERAより真の実力を反映（FIP定数は固定値の推定）", highlight: true, estimated: true },
           { label: "K/9", value: advPit.kPer9, desc: "9イニングあたりの奪三振数。支配力を測る" },
           { label: "BB/9", value: advPit.bbPer9, desc: "9イニングあたりの与四球数。制球力を測る" },
           { label: "H/9", value: advPit.hPer9, desc: "9イニングあたりの被安打数" },
@@ -164,7 +168,7 @@ export default async function DashboardPage() {
           { label: "K/BB", value: advPit.kPerBb, desc: "奪三振と与四球の比率。制球力の総合指標", highlight: true },
           { label: "K%", value: advPit.kRate, desc: "対戦打者に対する三振割合。高いほど支配的", highlight: true },
           { label: "BB%", value: advPit.bbRate, desc: "対戦打者に対する四球割合。低いほど良い" },
-          { label: "LOB%", value: advPit.lob, desc: "残塁率。出塁した走者をホームに返さなかった割合" },
+          { label: "LOB%", value: advPit.lob, desc: "残塁率。出塁した走者をホームに返さなかった割合（簡易式による推定）", estimated: true },
           { label: "WHIP", value: current.pitching.whip, desc: "1イニングあたりの出塁許可数（安打+四球）。1.00以下がエース級" },
           { label: "ERA", value: current.pitching.era, desc: "防御率。9イニングあたりの自責点。投手の基本指標" },
           { label: "IP", value: current.pitching.inningsPitched, desc: "投球回数。長く投げるほどチームへの貢献大" },
@@ -201,17 +205,27 @@ export default async function DashboardPage() {
                 </>
               ) : war.source === "scraped" ? (
                 <>
-                  出典:{" "}
+                  出典: fWAR=
                   <a
-                    href={warResult.snapshot.sourceUrl}
+                    href="https://www.fangraphs.com/leaders/war"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-dodger-blue hover:underline"
                   >
-                    nobita-retire.com
+                    FanGraphs
                   </a>
-                  {"（fWAR=FanGraphs / rWAR=Baseball Reference）"}
-                  {war.sourceUpdatedAt ? <> / 最終更新: {war.sourceUpdatedAt}</> : null}
+                  {" / rWAR="}
+                  <a
+                    href="https://www.baseball-reference.com/leagues/majors/2026.shtml"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-dodger-blue hover:underline"
+                  >
+                    Baseball-Reference
+                  </a>
+                  {"（数値は転記・手更新値）"}
+                  {" / 最終更新: "}
+                  {war.sourceUpdatedAt ?? "不明"}
                   {warResult.source !== "live" ? (
                     <>
                       {" "}
@@ -272,6 +286,21 @@ export default async function DashboardPage() {
       )}
 
       {/* Current Season Progress */}
+      {battingLog.length === 0 && pitchingLog.length === 0 && (
+        <section>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+            {currentYear}シーズン 推移
+          </h2>
+          <div className="rounded-2xl border border-border bg-surface p-8 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              試合ログを取得できませんでした
+            </p>
+            <div className="mt-3">
+              <RetryButton />
+            </div>
+          </div>
+        </section>
+      )}
       {(battingLog.length > 0 || pitchingLog.length > 0) && (
         <section>
           <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">

@@ -17,6 +17,10 @@ export interface BattingStats {
   obp: string;
   slg: string;
   ops: string;
+  // Raw API counts used for exact rate stats (optional: absent in older data)
+  plateAppearances?: number;
+  hitByPitch?: number;
+  sacFlies?: number;
 }
 
 export interface PitchingStats {
@@ -37,6 +41,7 @@ export interface PitchingStats {
   strikeOuts: number;
   whip: string;
   strikeoutsPer9: string;
+  battersFaced?: number;
 }
 
 export interface SeasonStats {
